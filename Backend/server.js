@@ -34,16 +34,17 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
-  res.redirect('/Navbar');
-});
+// app.get('/', (req, res) => {
+//   res.redirect('/Navbar');
+// });
 
-app.get('/new', (req, res, next) => {
-  res.status(200).end('Backend is working properly');
-});
+// app.post('/user/signup', (req, res, next) => {
+//   console.log('Req:', req.body);
+// });
 
-// let userRoutes = require('./userRoutes.js');
-// app.use('/users', userRoutes());
+const userRoutes = require('./userRoutes');
+
+app.use('/user', userRoutes);
 
 app.get('/error', (req, res, next) => {
   // some error in this request
