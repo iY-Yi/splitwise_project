@@ -40,15 +40,17 @@ userRouter.post('/login', (req, res) => {
   })();
 });
 
-// express.get('/:id', (req, res, next) => {
-//   console.log('get a user with Id  : req.params.id');
-//   res.json(
-//     result: 'sucess',
-//     users: {
-//       id: '456',
-//       name: 'jane doe',
-//     },
-//   });
-// });
+userRouter.get('/profile/:email', (req, res) => {
+  const { email } = req.params;
+  (async () => {
+    const users = await User.findAll({
+      attributes: ['email', 'name', 'phone', 'currency', 'timezone', 'language', 'avatar'],
+      where: { email },
+    });
+    const user = users[0];
+    console.log(JSON.stringify(user));
+    res.status(200).end(JSON.stringify(user));
+  })();
+});
 
 module.exports = userRouter;
