@@ -1,6 +1,6 @@
 import Axios from 'axios';
 import React, {Component} from 'react';
-// import {Redirect} from 'react-router';
+import {Redirect} from 'react-router';
 
 class Signup extends Component{
     state = {
@@ -9,7 +9,8 @@ class Signup extends Component{
             email: '',
             password: '',
         },
-        submitted:  null
+        submitted:  null,
+        error: '',
     };
 
     // componentWillMount(){
@@ -17,14 +18,9 @@ class Signup extends Component{
     // }
 
     handleChange = (e) => {
-        const { name, value } = e.target;
-        const { user } = this.state;
-        this.setState({
-            user : {
-                ...user,
-                [name]: value
-            }
-        });
+      const user = this.state.user;
+      user[e.target.name] = e.target.value;
+      this.setState({user});
     }
 
     handleSubmit = (e) => {
@@ -46,17 +42,16 @@ class Signup extends Component{
     }
 
     render(){
-        // //console.log(this.state.createFlag);
-        // if (this.state.submitted === true) {
-        //     console.log("Successful created. Redirect.")
-        //     return <Redirect to= "/login" />;
-        // }
+        if (this.state.submitted === true) {
+            return <Redirect to= "/dashboard" />;
+        }
         return(
             <div>
                 <br/>
                 <div className="container">
                     <h2>New User</h2>
                         <form id="userSignUp" onSubmit={this.handleSubmit}>
+                        { this.state.submitted === false && <div class="alert alert-danger">New user sign up failed.</div>}
                             <label for="name">Name:</label><br/>
                             <input class="form-control" type="text" id="name" name="name" onChange={this.handleChange}/><br/>
                             <label for="email">Email:</label><br/>

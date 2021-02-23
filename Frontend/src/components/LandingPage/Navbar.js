@@ -37,7 +37,7 @@ class Navbar extends Component {
             redirectVar = <Redirect to="/home"/>
         }
         if (!cookie.load('cookie')) {
-            redirectVar = <Redirect to="/login"/>
+            redirectVar = <Redirect to="/user/signin"/>
         }
         return(
             <div>

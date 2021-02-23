@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Route} from 'react-router-dom';
 import Signup from './User/Signup';
+import Login from './User/Login';
 import Navbar from './LandingPage/Navbar';
 
 //Create a Main Component
@@ -9,8 +10,9 @@ class Main extends Component {
         return(
             <div>
                 {/*Render Different Component based on Route*/}
-                <Route path="/new" component={Signup}/>
-                <Route path="/" component={Navbar}/>
+                {/* <Route path="/" component={Navbar}/> */}
+                <Route path="/user/signup" component={Signup}/>
+                <Route path="/user/login" component={Login}/>               
             </div>
         )
     }

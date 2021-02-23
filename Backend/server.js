@@ -6,12 +6,12 @@ const port = 3001;
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const cors = require('cors');
+// const cors = require('cors');
 
 app.set('view engine', 'ejs');
 
-// use cors to allow cross origin resource sharing
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+// // use cors to allow cross origin resource sharing
+// app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 
 // use express session to maintain session data
 app.use(session({
@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 //   console.log('Req:', req.body);
 // });
 
-const userRoutes = require('./userRoutes');
+const userRoutes = require('./userRouter');
 
 app.use('/user', userRoutes);
 
@@ -57,6 +57,7 @@ app.get('/error', (req, res, next) => {
     });
   }
 });
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
