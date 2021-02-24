@@ -9,8 +9,9 @@ const { User } = require('./db_connection');
 const userRouter = express.Router();
 
 userRouter.post('/signup', (req, res) => {
-  req.body.avatar = 'default.jpg';
+  req.body.avatar = '/default.jpg';
   req.body.currency = 'USD';
+  req.body.language = 'English';
   console.log(req.body);
   (async () => {
     try {
