@@ -40,25 +40,25 @@ class Login extends Component{
   }
 
     render(){
-        if (this.state.authFlag === true) {
-            return <Redirect to= "/dashboard" />;
-        }
-        return(
-            <div>
-                <br/>
-                <div className="container">
-                    <h3>Log In</h3>
-                        <form id="userLogin" onSubmit={this.submitLogin}>
-                        { this.state.authFlag === false && <div class="alert alert-danger">Log in failed!</div>}
-                            <label for="email">Email:</label><br/>
-                            <input class="form-control" type="email" id="email" name="email" placeholder="name@example.com" onChange={this.handleChange}/><br/>
-                            <label for="password">Password:</label><br/>
-                            <input class="form-control" type="password" id="password" name="password" onChange={this.handleChange}/><br/>
-                            <input type = "submit" value = "Submit" class="btn btn-primary"/>
-                        </form>
-                </div>
-            </div>
-        );
+      if (this.state.authFlag === true) {
+          return <Redirect to= "/home" />;
+      }
+      return(
+          <div>
+              <br/>
+              <div className="container">
+                  <h3>Log In</h3>
+                      <form id="userLogin" onSubmit={this.submitLogin}>
+                      { this.state.authFlag === false && <div class="alert alert-danger">Log in failed!</div>}
+                          <label for="email">Email:</label><br/>
+                          <input class="form-control" type="email" id="email" name="email" placeholder="name@example.com" onChange={this.handleChange}/><br/>
+                          <label for="password">Password:</label><br/>
+                          <input class="form-control" type="password" id="password" name="password" onChange={this.handleChange}/><br/>
+                          <input type = "submit" value = "Submit" class="btn btn-primary"/>
+                      </form>
+              </div>
+          </div>
+      );
     }
 }
 

@@ -17,6 +17,10 @@ const User = sequelize.define('user', {
   name: Sequelize.STRING,
   password: Sequelize.STRING,
   phone: Sequelize.STRING,
+  avatar: Sequelize.STRING,
+  currency: Sequelize.STRING,
+  timezone: Sequelize.STRING,
+  language: Sequelize.STRING,
 }, {
   tableName: 'user',
   timestamps: false,

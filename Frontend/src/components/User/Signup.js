@@ -13,10 +13,6 @@ class Signup extends Component{
         error: '',
     };
 
-    // componentWillMount(){
-    //     this.setState({ submitted: null});
-    // }
-
     handleChange = (e) => {
       const user = this.state.user;
       user[e.target.name] = e.target.value;
@@ -43,7 +39,7 @@ class Signup extends Component{
 
     render(){
         if (this.state.submitted === true) {
-            return <Redirect to= "/dashboard" />;
+            return <Redirect to= "/home" />;
         }
         return(
             <div>

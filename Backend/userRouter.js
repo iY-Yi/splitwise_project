@@ -3,17 +3,22 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 
 const saltRound = 10;
-const { sequelize, User } = require('./db_connection');
+const multer = require('multer');
+const { User } = require('./db_connection');
 
 const userRouter = express.Router();
 
 userRouter.post('/signup', (req, res) => {
+  req.body.avatar = 'default.jpg';
+  req.body.currency = 'USD';
+  console.log(req.body);
   (async () => {
     try {
       const salt = await bcrypt.genSalt(saltRound);
       req.body.password = await bcrypt.hash(req.body.password, salt);
       const newUser = await User.create(req.body);
-      console.log(JSON.stringify(newUser));
+      // console.log(JSON.stringify(newUser));
+      res.cookie('user', newUser.email, { maxAge: 86400000, httpOnly: false, path: '/' });
       res.status(200).end();
     } catch (err) {
       console.log(err);
@@ -32,7 +37,8 @@ userRouter.post('/login', (req, res) => {
     const match = await bcrypt.compare(req.body.password, user.password);
     console.log(req.body.password, user.password, match);
     if (match) {
-      res.cookie('user', user.email, { maxAge: 900000, httpOnly: false, path: '/' });
+      // 24 hours cookie
+      res.cookie('user', user.email, { maxAge: 86400000, httpOnly: false, path: '/' });
       res.status(200).end();
     } else {
       res.status(401).end();
@@ -44,13 +50,45 @@ userRouter.get('/profile/:email', (req, res) => {
   const { email } = req.params;
   (async () => {
     const users = await User.findAll({
-      attributes: ['email', 'name', 'phone', 'currency', 'timezone', 'language', 'avatar'],
       where: { email },
     });
     const user = users[0];
     console.log(JSON.stringify(user));
     res.status(200).end(JSON.stringify(user));
   })();
+});
+
+// upload avatar image
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, '../Frontend/public/images'); // save impages to frontend
+  },
+  filename(req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+const upload = multer({ storage }).single('file');
+
+userRouter.post('/upload', (req, res) => {
+  upload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(500).json(err);
+    } if (err) {
+      return res.status(500).json(err);
+    }
+    return res.status(200).send(req.file.filename);
+  });
+});
+
+userRouter.post('/update', (req, res) => {
+  console.log(req.body);
+  const { email } = req.body;
+  (async () => {
+    await User.update(req.body, {
+      where: { email },
+    });
+  })();
+  res.status(200).end();
 });
 
 module.exports = userRouter;

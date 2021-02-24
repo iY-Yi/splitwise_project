@@ -6,7 +6,7 @@ const port = 3001;
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-// const cors = require('cors');
+const cors = require('cors');
 
 app.set('view engine', 'ejs');
 
@@ -23,6 +23,7 @@ app.use(session({
 }));
 
 app.use(bodyParser.json());
+app.use(cors());
 
 // Allow Access Control
 app.use((req, res, next) => {

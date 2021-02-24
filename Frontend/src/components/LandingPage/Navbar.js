@@ -1,4 +1,4 @@
-import React,{Component} from 'react';
+import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
@@ -10,9 +10,11 @@ class Navbar extends Component {
         this.handleLogout = this.handleLogout.bind(this);
     }
     //handle logout to destroy the cookie
+    
     handleLogout = () => {
         cookie.remove('cookie', { path: '/' })
     }
+
     render(){
         //if Cookie is set render Logout Button
         let navLogin = null;
