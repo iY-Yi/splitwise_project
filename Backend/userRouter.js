@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 
 const saltRound = 10;
 const multer = require('multer');
-const { User } = require('./db_connection');
+const { User } = require('./db_models');
 
 const userRouter = express.Router();
 

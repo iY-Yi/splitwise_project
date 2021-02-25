@@ -3,6 +3,7 @@ import { Route } from 'react-router-dom';
 import Signup from './User/Signup';
 import Login from './User/Login';
 import Profile from './User/Profile';
+import NewGroup from './Group/NewGroup';
 // import Navbar from './LandingPage/Navbar';
 
 // Create a Main Component
@@ -15,6 +16,7 @@ class Main extends Component {
         <Route path="/user/signup" component={Signup} />
         <Route path="/user/login" component={Login} />
         <Route path="/user/profile" component={Profile} />
+        <Route path="/group/new" component={NewGroup} />
       </div>
     );
   }

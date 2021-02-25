@@ -5,13 +5,14 @@ const port = 3001;
 
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
 app.set('view engine', 'ejs');
 
 // // use cors to allow cross origin resource sharing
 // app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors());
 
 // use express session to maintain session data
 app.use(session({
@@ -23,7 +24,6 @@ app.use(session({
 }));
 
 app.use(bodyParser.json());
-app.use(cors());
 
 // Allow Access Control
 app.use((req, res, next) => {
@@ -39,13 +39,11 @@ app.use((req, res, next) => {
 //   res.redirect('/Navbar');
 // });
 
-// app.post('/user/signup', (req, res, next) => {
-//   console.log('Req:', req.body);
-// });
-
 const userRoutes = require('./userRouter');
+const groupRoutes = require('./groupRouter');
 
 app.use('/user', userRoutes);
+app.use('/group', groupRoutes);
 
 app.get('/error', (req, res, next) => {
   // some error in this request
