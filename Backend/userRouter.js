@@ -40,9 +40,9 @@ userRouter.post('/login', (req, res) => {
     if (match) {
       // 24 hours cookie
       res.cookie('user', user.email, { maxAge: 86400000, httpOnly: false, path: '/' });
-      res.status(200).end();
+      res.status(200).end(JSON.stringify(user));
     } else {
-      res.status(401).end();
+      res.status(401).end('Incorrect username or password.');
     }
   })();
 });

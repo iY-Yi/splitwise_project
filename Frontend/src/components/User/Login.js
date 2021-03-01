@@ -1,17 +1,27 @@
 import Axios from 'axios';
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
+import { userLogin } from '../../js/actions/loginAction';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
 class Login extends Component{
-  state = {
-    email : "",
-    password : "",
-    authFlag : null
+
+  constructor(props) {
+    super(props);
+    this.state = {};
   }
+  // state = {
+  //   email : "",
+  //   password : "",
+  //   authFlag : null
+  // }
 
   handleChange = (e) => {
     // user[e.target.name] = e.target.value;
-    this.setState({[e.target.name]: e.target.value});
+    this.setState({
+      [e.target.name]: e.target.value
+    });
   }
 
   submitLogin = (e) => {
@@ -21,25 +31,29 @@ class Login extends Component{
           email : this.state.email,
           password : this.state.password
       }
-      console.log(data);
+      this.props.userLogin(data);
+      this.setState({
+        authFlag: true,
+      });
 
-      Axios.post("/user/login", data)
-      .then((response)=> {
-          if(response.status === 200){
-            // console.log(response.status);
-            this.setState({
-                authFlag : true
-            })
-        }
-      })
-      .catch((err) => {
-        this.setState({
-          authFlag : false
-        })
-      }); 
+      // Axios.post("/user/login", data)
+      // .then((response)=> {
+      //     if(response.status === 200){
+      //       // console.log(response.status);
+      //       this.setState({
+      //           authFlag : true
+      //       })
+      //   }
+      // })
+      // .catch((err) => {
+      //   this.setState({
+      //     authFlag : false
+      //   })
+      // }); 
   }
 
     render(){
+      console.log(this.props);
       if (this.state.authFlag === true) {
           return <Redirect to= "/home" />;
       }
@@ -62,4 +76,17 @@ class Login extends Component{
     }
 }
 
-export default Login;
+// login component includes user object and userLogin action/function.
+Login.propTypes = {
+  userLogin: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired
+}
+
+const mapStateToProps = (state) => {
+  return ({
+    user: state.login.user
+  });
+};
+
+// export default Login;
+export default connect(mapStateToProps, { userLogin})(Login);
