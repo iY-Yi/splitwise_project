@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import cookie from 'react-cookies';
 import { Redirect } from 'react-router';
+import { userLogout } from '../../js/actions/loginAction';
+import { connect } from 'react-redux';
 
 // create the Navbar Component
 class Navbar extends Component {
@@ -13,6 +15,7 @@ class Navbar extends Component {
 
   handleLogout = () => {
       cookie.remove('user', { path: '/' })
+      this.props.userLogout();
   }
 
   render() {
@@ -36,6 +39,13 @@ class Navbar extends Component {
       navLogin = (
         <ul className="nav navbar-nav navbar-right">
           <li>
+            <Link to="/user/signup">
+              <span className="glyphicon glyphicon-log-in" />
+              {' '}
+              Sign Up
+            </Link>
+          </li>
+          <li>
             <Link to="/user/login">
               <span className="glyphicon glyphicon-log-in" />
               {' '}
@@ -49,7 +59,7 @@ class Navbar extends Component {
     if (cookie.load('user')) {
       redirectVar = <Redirect to="/dashboard" />;
     }
-    if (!cookie.load('cookie')) {
+    if (!cookie.load('user')) {
       redirectVar = <Redirect to="/landing" />;
     }
     return (
@@ -72,4 +82,10 @@ class Navbar extends Component {
   }
 }
 
-export default Navbar;
+const mapDispatchToProps = dispatch => {
+  return {
+    userLogout: ()=> dispatch(userLogout())
+  }
+}
+
+export default connect(null, mapDispatchToProps)(Navbar);

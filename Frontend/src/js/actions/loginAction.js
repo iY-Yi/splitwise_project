@@ -9,6 +9,7 @@ export const userLogin = (loginData) => (dispatch) => {
       payload: Response.data,
     }))
     .catch((error) => {
+      console.log(error.response);
       if (error.response && error.response.data) {
         return dispatch({
           type: USER_LOGIN,

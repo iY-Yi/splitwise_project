@@ -11,7 +11,7 @@ class Landing extends Component {
 
       <div className="container">
         <img src="landing.png" className="mx-auto d-block" alt="Landing" />
-        <a className="btn btn-secondary" href="/user/signup">Sing Up</a>
+        <a className="btn btn-secondary" href="/user/signup">Sign Up</a>
       </div>
     );
   }
