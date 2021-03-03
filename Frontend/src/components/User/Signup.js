@@ -12,7 +12,7 @@ class Signup extends Component{
         email: '',
         password: '',
     },
-    submitted:  null,
+    submitted:  false,
     error: '',
   };
 
@@ -46,9 +46,10 @@ class Signup extends Component{
   }
 
   render(){
-    // console.log('props:', this.props);
+    // console.log('In signup', this.props);
     let message = '';
-    if (this.props.user && this.props.user.email) {
+    if (this.state.submitted === true && this.props.user && this.props.user.email) {
+      // console.log('redirect to dashboard');
       return <Redirect to= "/dashboard" />;
     }
     else if (this.props.user && this.props.user.errors) {

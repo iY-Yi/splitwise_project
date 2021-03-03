@@ -10,8 +10,10 @@ class NewGroup extends Component{
     saveStatus: null,
     fileSelected: '',
     users: [],
-    members: [cookie.load('user')],
+    creator: cookie.load('user'),
+    // members: [],
     search: '',
+    message: '',
   };
 
   //get all users from backend  
@@ -40,6 +42,21 @@ class NewGroup extends Component{
     this.setState({ search: e.target.value});
   }
 
+  inviteUser = (e) => {
+    const inviteData= {
+      groupName: this.state.name,
+      userEmail: e.target.value,
+      accepted: 0,
+    }
+    Axios.post('/group/invite', inviteData)
+    .then((response)=>{
+      console.log(response.status);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }
+
   submitSave = async(e) => {
     e.preventDefault();
     // upload group image
@@ -51,11 +68,18 @@ class NewGroup extends Component{
     }
 
     // create in database
-    const group = this.state;
+    const group = {
+      name: this.state.name,
+      image: this.state.image,
+      fileSelected: this.state.fileSelected,
+      creator: this.state.creator,
+      // members: this.state.members,     
+    }
     try {
       const response = await Axios.post("/group/new", group)
       console.log("Group created: ", response.status);
-      this.setState({ saveStatus: true});
+      this.setState({ saveStatus: true,
+        message : 'New group is created.'});
       }
     catch (e) {
       console.log(e);
@@ -64,7 +88,7 @@ class NewGroup extends Component{
   }
 
   render(){
-    let members = this.state.users.filter((data) => {
+    let searchMembers = this.state.users.filter((data) => {
       if (this.state.search !== '' && (data.name.toLowerCase().includes(this.state.search.toLowerCase()) ||
       data.email.toLowerCase().includes(this.state.search.toLowerCase()))){
         return data;
@@ -72,19 +96,18 @@ class NewGroup extends Component{
     })
     .map(user => {
       return(
-      <table class="table">
-        <tbody>
           <tr>
             <td>{user.name}</td>
+            <td>                                
+              <button type="button" class="btn btn-secondary btn-sm" value={user.email} onClick={(e)=>this.inviteUser(e)}>Invite</button>                
+            </td>
           </tr>
-        </tbody>
-      </table>
       )
-    })
+    });
 
     return(
       <div className="container-fluid">
-        <h3>START A NEW GROUP</h3>
+        <h3>GROUP</h3>
         <div class = "row">
           <div class="col-md-4">
             <form>
@@ -96,14 +119,21 @@ class NewGroup extends Component{
           </div>
           <div class="col-md-8">
             <form>
-              <label for="name">My group shall be called...</label><br/>
+              <label for="name">Group Name</label><br/>
               <input class="form-control" type="text" id="name" name="name" value={this.state.name} onChange={this.handleChange}/><br/>
-
+              <input type = "Button" value = "Save" class="btn btn-success btn-lg" onClick={this.submitSave}/>
+              { this.state.saveStatus && this.state.message!=='' && <div class="alert alert-info">{this.state.message}</div>}
+              <br />
+              <h4>Invite User</h4>
               <input type="text" class="form-control" placeholder="Enter to search for a user" onChange={(e)=>this.searchUser(e)} />
-                {members}
+              <table class="table">
+                <tbody>
+                {searchMembers}
+                </tbody>
+              </table>
             </form>
             &nbsp;&nbsp;&nbsp;
-            <input type = "Button" value = "Save" class="btn btn-success btn-lg" onClick={this.submitSave}/>
+            
           </div>
         </div>
       </div>

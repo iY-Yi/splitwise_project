@@ -35,16 +35,104 @@ groupRouter.post('/upload', (req, res) => {
   });
 });
 
+// create new group
 groupRouter.post('/new', (req, res) => {
   req.body.count = 1;
-  console.log(req.cookies);
-  (async () => {
-    try {
-      await Group.create(req.body);
-      res.status(200).end();
-    } catch (err) {
+  console.log(req.body);
+
+  Group.create(req.body)
+    .then(() => {
+      GroupUser.create({
+        groupName: req.body.name,
+        userEmail: req.body.creator,
+        accepted: 1,
+      });
+    })
+    .then(() => res.status(200).end())
+    .catch((err) => {
       console.log(err);
       res.status(400).send(JSON.stringify(err));
+    });
+});
+
+// invite user to group
+groupRouter.post('/invite', (req, res) => {
+  GroupUser.create(req.body)
+    .then(() => res.status(200).end())
+    .catch((err) => {
+      console.log(err);
+      res.status(400).send(JSON.stringify(err));
+    });
+});
+
+// display all groups
+groupRouter.get('/all', (req, res) => {
+  console.log(req.query);
+  (async () => {
+    const invites = await GroupUser.findAll({
+      where: {
+        userEmail: req.query.user,
+        accepted: 0,
+      },
+    });
+    const groups = await GroupUser.findAll({
+      where: {
+        userEmail: req.query.user,
+        accepted: 1,
+      },
+    });
+    res.status(200).send({
+      invites,
+      groups,
+    });
+  })();
+});
+
+// leave group
+groupRouter.post('/leave', (req, res) => {
+  console.log(req.body);
+  Group.findByPk(req.body.groupName)
+    .then((p) => {
+      console.log(p);
+      p.count -= 1;
+      p.save();
+    })
+    .then(() => {
+      GroupUser.destroy({
+        where: {
+          userEmail: req.body.userEmail,
+          groupName: req.body.groupName,
+        },
+      });
+    })
+    .then(() => {
+      res.status(200).end();
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).send(JSON.stringify(err));
+    });
+});
+
+// Accept group invite
+groupRouter.post('/accept', (req, res) => {
+  console.log(req.body);
+  (async () => {
+    try {
+      const data = await GroupUser.findOne({
+        where: {
+          groupName: req.body.groupName,
+          userEmail: req.body.userEmail,
+        },
+      });
+      data.accepted = 1;
+      await data.save();
+      const group = await Group.findByPk(req.body.groupName);
+      group.count += 1;
+      await group.save();
+      res.status(200).end();
+    } catch (err) {
+      res.status(400).send(err);
     }
   })();
 });

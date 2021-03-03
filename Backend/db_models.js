@@ -40,19 +40,22 @@ const Group = sequelize.define('group', {
 
 // DataTypes.BOOLEAN
 const GroupUser = sequelize.define('group_user', {
-  group: {
+  groupName: {
     type: Sequelize.STRING,
     references: {
       model: Group,
       key: 'name',
     },
   },
-  user: {
+  userEmail: {
     type: Sequelize.STRING,
     references: {
       model: User,
       key: 'email',
     },
+  },
+  accepted: {
+    type: Sequelize.BOOLEAN,
   },
 }, {
   tableName: 'group_user',

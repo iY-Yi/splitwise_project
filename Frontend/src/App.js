@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import Main from './components/Main';
 import store from './js/store/store';
+// import Navbar from '.components/LandingPage/Navbar';
 
 // App Component
 class App extends Component {

@@ -112,6 +112,7 @@ class Profile extends Component{
               <label for="language">Language:</label><br/>
               <select class="form-control" name="language" id="language" value={this.state.user.language} disabled={this.state.disabled} onChange={this.handleChange}>
                 <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
               </select><br/>              
               <input type = "button" value = "Edit" class="btn btn-secondary btn-lg" onClick={this.handleEditClick}/>
               &nbsp;&nbsp;&nbsp;

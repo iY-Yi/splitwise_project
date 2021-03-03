@@ -26,7 +26,17 @@ class Navbar extends Component {
       navLogin = (
         <ul className="nav navbar-nav navbar-right">
           <li>
-            <Link to="/" onClick={this.handleLogout}>
+            <Link to="/dashboard">
+              Dashboard
+            </Link>
+          </li>
+          <li>
+            <Link to="/user/profile">
+              Profile
+            </Link>
+          </li>
+          <li>
+            <Link to="/landing" onClick={this.handleLogout}>
               <span className="glyphicon glyphicon-user" />
               Logout
             </Link>
@@ -40,31 +50,31 @@ class Navbar extends Component {
         <ul className="nav navbar-nav navbar-right">
           <li>
             <Link to="/user/signup">
-              <span className="glyphicon glyphicon-log-in" />
-              {' '}
+              {/* <span className="glyphicon glyphicon-log-in" />
+              {' '} */}
               Sign Up
             </Link>
           </li>
           <li>
             <Link to="/user/login">
-              <span className="glyphicon glyphicon-log-in" />
-              {' '}
+              {/* <span className="glyphicon glyphicon-log-in" />
+              {' '} */}
               Login
             </Link>
           </li>
         </ul>
       );
     }
-    let redirectVar = null;
-    if (cookie.load('user')) {
-      redirectVar = <Redirect to="/dashboard" />;
-    }
-    if (!cookie.load('user')) {
-      redirectVar = <Redirect to="/landing" />;
-    }
+    // let redirectVar = null;
+    // if (cookie.load('user')) {
+    //   redirectVar = <Redirect to="/dashboard" />;
+    // }
+    // if (!cookie.load('user')) {
+    //   redirectVar = <Redirect to="/landing" />;
+    // }
     return (
       <div>
-        {redirectVar}
+        {/* {redirectVar} */}
         <nav className="navbar navbar-inverse">
           <div className="container-fluid">
             <div className="navbar-header">
