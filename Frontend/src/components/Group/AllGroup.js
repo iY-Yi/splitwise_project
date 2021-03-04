@@ -70,7 +70,7 @@ class AllGroup extends Component{
     .map((group) => {
       return(
         <tr>
-          <td>{group.groupName}</td>
+          <td><a href={"/group/expense/"+ group.groupName}>{group.groupName}</a></td>
           <td>                                
             <button type="button" class="btn btn-secondary btn-sm" value={group.groupName} onClick={(e)=>this.leaveGroup(e)}>Leave</button>                
           </td>

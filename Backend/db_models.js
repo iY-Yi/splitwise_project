@@ -1,4 +1,4 @@
-const Sequelize = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 const config = require('./db_Config');
 
 const sequelize = new Sequelize(config.database, config.username, config.password, {
@@ -65,6 +65,50 @@ const GroupUser = sequelize.define('group_user', {
 User.belongsToMany(Group, { through: GroupUser });
 Group.belongsToMany(User, { through: GroupUser });
 
+const Expense = sequelize.define('expense', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: Sequelize.UUIDV4,
+  },
+  group: DataTypes.STRING,
+  date: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW,
+  },
+  email: DataTypes.STRING,
+  description: DataTypes.STRING,
+  amount: DataTypes.DECIMAL,
+}, {
+  tableName: 'expense',
+  timestamps: false,
+});
+
+// User.hasMany(Expense);
+Expense.belongsTo(User, { foreignKey: 'email' });
+
+// activity
+const Activity = sequelize.define('activity', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: Sequelize.UUIDV4,
+  },
+  group: DataTypes.STRING,
+  date: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW,
+  },
+  description: DataTypes.STRING,
+  debtor: DataTypes.STRING,
+  creditor: DataTypes.STRING,
+  amount: DataTypes.DECIMAL,
+  clear: DataTypes.BOOLEAN,
+}, {
+  tableName: 'activity',
+  timestamps: false,
+});
+
 module.exports = {
-  sequelize, User, Group, GroupUser,
+  sequelize, User, Group, GroupUser, Activity, Expense,
 };

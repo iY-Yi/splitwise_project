@@ -1,6 +1,8 @@
 const express = require('express');
 const multer = require('multer');
-const { User, Group, GroupUser } = require('./db_models');
+const {
+  User, Group, GroupUser, Expense, Activity,
+} = require('./db_models');
 
 const groupRouter = express.Router();
 
@@ -130,6 +132,60 @@ groupRouter.post('/accept', (req, res) => {
       const group = await Group.findByPk(req.body.groupName);
       group.count += 1;
       await group.save();
+      res.status(200).end();
+    } catch (err) {
+      res.status(400).send(err);
+    }
+  })();
+});
+
+groupRouter.get('/expense/:group', (req, res) => {
+  const { group } = req.params;
+  (async () => {
+    const expenses = await Expense.findAll({
+      // attributes:['date', 'email', 'description', 'amount'],
+      where: {
+        group,
+      },
+      include: [{
+        model: User,
+      }],
+      order: [['date', 'DESC']],
+    });
+    res.status(200).send({
+      expenses,
+    });
+  })();
+});
+
+// add new expense
+groupRouter.post('/expense/add', (req, res) => {
+  console.log(req.body);
+  (async () => {
+    try {
+      // add to expense table
+      await Expense.create(req.body);
+      // add to activity table
+      const { count, rows } = await GroupUser.findAndCountAll({
+        attributes: ['userEmail'],
+        where: {
+          groupName: req.body.group,
+          accepted: 1,
+        },
+      });
+      const splitAmount = req.body.amount / count;
+      rows.filter((row) => row.userEmail !== req.body.email).map(async (row) => {
+        const data = {
+          group: req.body.group,
+          description: req.body.description,
+          amount: splitAmount,
+          debtor: row.userEmail,
+          creditor: req.body.email,
+          clear: 0,
+        };
+        await Activity.create(data);
+      });
+
       res.status(200).end();
     } catch (err) {
       res.status(400).send(err);

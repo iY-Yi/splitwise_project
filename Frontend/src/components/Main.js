@@ -5,6 +5,7 @@ import Login from './User/Login';
 import Profile from './User/Profile';
 import NewGroup from './Group/NewGroup';
 import AllGroup from './Group/AllGroup';
+import Expense from './Group/Expense';
 import Navbar from './LandingPage/Navbar';
 import Landing from './LandingPage/Landing';
 import Dashboard from './LandingPage/Dashboard';
@@ -22,6 +23,7 @@ class Main extends Component {
         <Route path="/user/profile" component={Profile} />
         <Route path="/group/new" component={NewGroup} />
         <Route path="/group/all" component={AllGroup} />
+        <Route path="/group/expense/:group" component={Expense} />
         <Route path="/landing" component={Landing} />
       </div>
     );
