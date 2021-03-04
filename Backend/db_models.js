@@ -100,9 +100,9 @@ const Activity = sequelize.define('activity', {
     defaultValue: Sequelize.NOW,
   },
   description: DataTypes.STRING,
-  debtor: DataTypes.STRING,
-  creditor: DataTypes.STRING,
-  amount: DataTypes.DECIMAL,
+  user1: DataTypes.STRING,
+  user2: DataTypes.STRING,
+  owe: DataTypes.DECIMAL,
   clear: DataTypes.BOOLEAN,
 }, {
   tableName: 'activity',

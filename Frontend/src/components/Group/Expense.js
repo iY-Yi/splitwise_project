@@ -10,6 +10,7 @@ class Expense extends Component {
       group: this.props.match.params.group,
       email: cookie.load('user'),
       expenses: [],
+      balances: [],
       description: '',
       amount: -1,
       message: '',
@@ -24,9 +25,10 @@ class Expense extends Component {
     })
       .then((response) => {
         // update the state with the response data
-        console.log(response.data.expenses);
+        console.log(response.data.balances);
         this.setState({
           expenses: this.state.expenses.concat(response.data.expenses),
+          balances: this.state.balances.concat(response.data.balances),
         });
       });
   }
@@ -65,7 +67,13 @@ class Expense extends Component {
             <td>{expense.user.name} paid</td>
           </tr>
       )      
-    });     
+    }); 
+    
+    let balances = this.state.balances.map((balance) => {
+      return (
+        <li>{balance.u1} owes {balance.u2} {balance.balance}</li>
+      )
+    });
     return (
       <div className="container-fluid">
         <h3>
@@ -80,12 +88,22 @@ class Expense extends Component {
         </button>
         <br />
         <br />
-        <h5>Expenses</h5>
-        <table class="table">
-          <tbody>
-            {expenses}
-          </tbody>
-        </table> 
+        <div class = "row">
+          <div class="col-md-8">
+            <h5>Expenses</h5>
+            <table class="table">
+              <tbody>
+                {expenses}
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-4">
+            <h5>Group Balances</h5>
+            <ul>
+              {balances}
+            </ul>
+          </div>
+        </div> 
         {/* Modal to add expense */}
         <div className="modal" id="addExpenseModal">
           <div className="modal-dialog">

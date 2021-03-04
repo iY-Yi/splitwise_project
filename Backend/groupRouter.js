@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const { Sequelize } = require('sequelize');
 const {
   User, Group, GroupUser, Expense, Activity,
 } = require('./db_models');
@@ -152,8 +153,18 @@ groupRouter.get('/expense/:group', (req, res) => {
       }],
       order: [['date', 'DESC']],
     });
+    const balances = await Activity.findAll({
+      where: {
+        clear: 0,
+        group,
+      },
+      group: ['user1', 'user2'],
+      attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
+    });
+    console.log(balances);
     res.status(200).send({
       expenses,
+      balances,
     });
   })();
 });
@@ -175,14 +186,26 @@ groupRouter.post('/expense/add', (req, res) => {
       });
       const splitAmount = req.body.amount / count;
       rows.filter((row) => row.userEmail !== req.body.email).map(async (row) => {
-        const data = {
-          group: req.body.group,
-          description: req.body.description,
-          amount: splitAmount,
-          debtor: row.userEmail,
-          creditor: req.body.email,
-          clear: 0,
-        };
+        let data = {};
+        if (row.userEmail < req.body.email) {
+          data = {
+            group: req.body.group,
+            description: req.body.description,
+            owe: splitAmount,
+            user1: row.userEmail,
+            user2: req.body.email,
+            clear: 0,
+          };
+        } else {
+          data = {
+            group: req.body.group,
+            description: req.body.description,
+            owe: -splitAmount,
+            user1: req.body.email,
+            user2: row.userEmail,
+            clear: 0,
+          };
+        }
         await Activity.create(data);
       });
 
