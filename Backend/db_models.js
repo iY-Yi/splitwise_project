@@ -87,8 +87,8 @@ const Expense = sequelize.define('expense', {
 // User.hasMany(Expense);
 Expense.belongsTo(User, { foreignKey: 'email' });
 
-// activity
-const Activity = sequelize.define('activity', {
+// balance calculation
+const Balance = sequelize.define('balance', {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
@@ -105,10 +105,20 @@ const Activity = sequelize.define('activity', {
   owe: DataTypes.DECIMAL,
   clear: DataTypes.BOOLEAN,
 }, {
-  tableName: 'activity',
+  tableName: 'balance',
   timestamps: false,
 });
 
+Balance.belongsTo(User, {
+  foreignKey: 'user1',
+  as: 'U1',
+});
+
+Balance.belongsTo(User, {
+  foreignKey: 'user2',
+  as: 'U2',
+});
+
 module.exports = {
-  sequelize, User, Group, GroupUser, Activity, Expense,
+  sequelize, User, Group, GroupUser, Balance, Expense,
 };

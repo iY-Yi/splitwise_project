@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const { Sequelize } = require('sequelize');
 const {
-  User, Group, GroupUser, Expense, Activity,
+  User, Group, GroupUser, Expense, Balance,
 } = require('./db_models');
 
 const groupRouter = express.Router();
@@ -153,11 +153,12 @@ groupRouter.get('/expense/:group', (req, res) => {
       }],
       order: [['date', 'DESC']],
     });
-    const balances = await Activity.findAll({
+    const balances = await Balance.findAll({
       where: {
         clear: 0,
         group,
       },
+      include: [{ model: User, as: 'U1' }, { model: User, as: 'U2' }],
       group: ['user1', 'user2'],
       attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
     });
@@ -176,7 +177,7 @@ groupRouter.post('/expense/add', (req, res) => {
     try {
       // add to expense table
       await Expense.create(req.body);
-      // add to activity table
+      // add to balance table
       const { count, rows } = await GroupUser.findAndCountAll({
         attributes: ['userEmail'],
         where: {
@@ -206,7 +207,7 @@ groupRouter.post('/expense/add', (req, res) => {
             clear: 0,
           };
         }
-        await Activity.create(data);
+        await Balance.create(data);
       });
 
       res.status(200).end();

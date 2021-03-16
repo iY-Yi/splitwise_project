@@ -14,6 +14,8 @@ app.set('view engine', 'ejs');
 // app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(cors());
 
+const { Expense, User, GroupUser } = require('./db_models');
+
 // use express session to maintain session data
 app.use(session({
   secret: 'cmpe273_splitwise',
@@ -44,6 +46,33 @@ const groupRoutes = require('./groupRouter');
 
 app.use('/user', userRoutes);
 app.use('/group', groupRoutes);
+
+// display all activities
+app.get('/activity', (req, res) => {
+  (async () => {
+    const groups = await GroupUser.findAll({
+      attributes: ['groupName'],
+      where: {
+        userEmail: req.query.user,
+        accepted: 1,
+      },
+      raw: true,
+    });
+    const groupNames = groups.map((group) => group.groupName);
+    console.log(groupNames);
+    const activities = await Expense.findAll({
+      where: {
+        group: groupNames,
+      },
+      include: [{ model: User }],
+      order: [['date', 'DESC']],
+    });
+    res.status(200).send({
+      activities,
+      groupNames,
+    });
+  })();
+});
 
 app.get('/error', (req, res, next) => {
   // some error in this request

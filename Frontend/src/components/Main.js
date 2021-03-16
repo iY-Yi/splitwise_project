@@ -9,6 +9,7 @@ import Expense from './Group/Expense';
 import Navbar from './LandingPage/Navbar';
 import Landing from './LandingPage/Landing';
 import Dashboard from './LandingPage/Dashboard';
+import Activity from './Dashboard/Activity';
 
 // Create a Main Component
 class Main extends Component {
@@ -25,6 +26,7 @@ class Main extends Component {
         <Route path="/group/all" component={AllGroup} />
         <Route path="/group/expense/:group" component={Expense} />
         <Route path="/landing" component={Landing} />
+        <Route path="/activity" component={Activity} />
       </div>
     );
   }

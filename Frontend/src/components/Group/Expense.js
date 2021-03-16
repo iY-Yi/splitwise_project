@@ -1,6 +1,7 @@
 import Axios from 'axios';
 import React, { Component } from 'react';
 import cookie from 'react-cookies';
+import numeral from 'numeral';
 import { Redirect } from 'react-router';
 
 class Expense extends Component {
@@ -25,11 +26,12 @@ class Expense extends Component {
     })
       .then((response) => {
         // update the state with the response data
-        console.log(response.data.balances);
+        // console.log(response.data.balances);
         this.setState({
           expenses: this.state.expenses.concat(response.data.expenses),
           balances: this.state.balances.concat(response.data.balances),
         });
+        console.log(this.state.balances);
       });
   }
 
@@ -70,9 +72,17 @@ class Expense extends Component {
     }); 
     
     let balances = this.state.balances.map((balance) => {
-      return (
-        <li>{balance.u1} owes {balance.u2} {balance.balance}</li>
-      )
+      if (balance.total > 0){
+        return (
+          <li>{balance.U1.name} owes {balance.U2.name} {numeral(balance.total).format('0,0.00')}</li>
+        )
+      }
+      else if (balance.total < 0) {
+        return (
+          <li>{balance.U2.name} owes {balance.U1.name} {numeral(-balance.total).format('0,0.00')}</li>
+        )        
+      }
+
     });
     return (
       <div className="container-fluid">
