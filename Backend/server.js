@@ -14,7 +14,10 @@ app.set('view engine', 'ejs');
 // app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(cors());
 
-const { Expense, User, GroupUser } = require('./db_models');
+const { Sequelize, Op } = require('sequelize');
+const {
+  Expense, User, GroupUser, Balance,
+} = require('./db_models');
 
 // use express session to maintain session data
 app.use(session({
@@ -46,6 +49,58 @@ const groupRoutes = require('./groupRouter');
 
 app.use('/user', userRoutes);
 app.use('/group', groupRoutes);
+
+// display transactions in dashboard
+app.get('/dashboard', (req, res) => {
+  (async () => {
+    const balances = await Balance.findAll({
+      where: {
+        [Op.and]: [{ clear: 0 }, { [Op.or]: [{ user1: req.query.user }, { user2: req.query.user }] }],
+      },
+      include: [{ model: User, as: 'U1', attributes: ['name'] }, { model: User, as: 'U2', attributes: ['name'] }],
+      group: ['user1', 'user2'],
+      attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
+      raw: true,
+    });
+    // split data to owes and owed
+    const owes = [];
+    const owed = [];
+    balances.map((data) => {
+      if ((data.user1 === req.query.user && data.total > 0) || (data.user2 === req.query.user && data.total < 0)) {
+        if (data.total < 0) {
+          data.balance = -data.total;
+          data.email = data.user1;
+          data.name = data['U1.name'];
+        } else {
+          data.balance = data.total;
+          data.email = data.user2;
+          data.name = data['U2.name'];
+        }
+        owes.push(data);
+      } else {
+        if (data.total < 0) {
+          data.balance = -data.total;
+          data.email = data.user2;
+          data.name = data['U2.name'];
+        } else {
+          data.balance = data.total;
+          data.email = data.user1;
+          data.name = data['U1.name'];
+        }
+        owed.push(data);
+      }
+    });
+    console.log('owes: ', owes);
+    console.log('owed:', owed);
+    res.status(200).send({
+      owes, owed,
+    });
+  })();
+});
+
+app.post('/settle', (req, res) => {
+  res.status(200).end();
+});
 
 // display all activities
 app.get('/activity', (req, res) => {

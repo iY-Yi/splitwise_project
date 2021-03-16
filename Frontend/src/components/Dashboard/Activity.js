@@ -69,11 +69,9 @@ class Activity extends Component {
     .map((activity) => (
       <tr>
         <td>{activity.date}</td>
-        <td>{activity.user.name} paid {activity.amount} for {activity.description} in group {activity.group}</td>
+        <td>{activity.user.name} paid {numeral(activity.amount).format('0,0.00')} for {activity.description} in group {activity.group}</td>
       </tr>
     ));
-
-
 
     return (
       <div className="container-fluid">

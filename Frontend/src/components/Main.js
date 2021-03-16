@@ -8,7 +8,7 @@ import AllGroup from './Group/AllGroup';
 import Expense from './Group/Expense';
 import Navbar from './LandingPage/Navbar';
 import Landing from './LandingPage/Landing';
-import Dashboard from './LandingPage/Dashboard';
+import Dashboard from './Dashboard/Dashboard';
 import Activity from './Dashboard/Activity';
 
 // Create a Main Component
