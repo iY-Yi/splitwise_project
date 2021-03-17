@@ -21,10 +21,10 @@ class AllGroup extends Component{
     })
     .then((response) => {
     //update the state with the response data
-    console.log(response);
+    // console.log(response);
     this.setState({
-      invites : this.state.invites.concat(response.data.invites),
-      groups : this.state.groups.concat(response.data.groups),
+      invites : response.data.invites,
+      groups : response.data.groups,
     });
   });
   }
@@ -41,6 +41,7 @@ class AllGroup extends Component{
     Axios.post('/group/accept', data)
     .then(()=> {
       this.setState({ message: 'Join group successfully.' });
+      this.componentDidMount();
     })
     .catch((err) => {
       console.log(err);
@@ -55,9 +56,10 @@ class AllGroup extends Component{
     Axios.post('/group/leave', data)
     .then(()=> {
       this.setState({ message: 'Leave group successfully.' });
+      this.componentDidMount();
     })
     .catch((err) => {
-      console.log(err);
+      this.setState({ message: 'Failed: OPEN_BALANCE' });
     })
   }
 

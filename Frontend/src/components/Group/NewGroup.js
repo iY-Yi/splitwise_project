@@ -14,6 +14,7 @@ class NewGroup extends Component{
     // members: [],
     search: '',
     message: '',
+    inviteMsg: '',
   };
 
   //get all users from backend  
@@ -50,10 +51,13 @@ class NewGroup extends Component{
     }
     Axios.post('/group/invite', inviteData)
     .then((response)=>{
-      console.log(response.status);
+      this.setState({
+        inviteMsg : 'The user is invited.'});
     })
     .catch((err) => {
-      console.log(err);
+      this.setState({
+        inviteMsg: err
+      })
     });
   }
 
@@ -122,10 +126,11 @@ class NewGroup extends Component{
               <label for="name">Group Name</label><br/>
               <input class="form-control" type="text" id="name" name="name" value={this.state.name} onChange={this.handleChange}/><br/>
               <input type = "Button" value = "Save" class="btn btn-success btn-lg" onClick={this.submitSave}/>
+              <br />
               { this.state.saveStatus && this.state.message!=='' && <div class="alert alert-info">{this.state.message}</div>}
               <br />
-              <br />
               <h4>Invite User</h4>
+              { this.state.inviteMsg!=='' && <div class="alert alert-info">{this.state.inviteMsg}</div>}
               <input type="text" class="form-control" placeholder="Enter to search for a user" onChange={(e)=>this.searchUser(e)} />
               <table class="table">
                 <tbody>

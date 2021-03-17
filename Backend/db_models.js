@@ -31,7 +31,6 @@ const Group = sequelize.define('group', {
     type: Sequelize.STRING,
     primaryKey: true,
   },
-  count: Sequelize.INTEGER,
   image: Sequelize.STRING,
 }, {
   tableName: 'group',

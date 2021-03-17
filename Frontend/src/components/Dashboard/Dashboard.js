@@ -10,8 +10,7 @@ class Dashboard extends Component {
     this.state = {
       owes: [],
       owed: [],
-      owesDetail: [],
-      owedDetail: [],
+      details: [],
       userSelected: '',
       user: '',
       message: '',
@@ -32,8 +31,7 @@ class Dashboard extends Component {
         this.setState({
           owes: response.data.owes,
           owed: response.data.owed,
-          // owesDetail: response.data.owesDetail,
-          // owedDetail: response.data.owedDetail,
+          details: response.data.details,
         });
       });
   }
@@ -81,8 +79,17 @@ class Dashboard extends Component {
           <td>{numeral(record.balance).format('0,0.00')} {currency}</td>
         </tr>
       ));
-    return (
 
+    const detailsList = this.state.details.map((d) => {
+      console.log(d);
+      if (d.total < 0) {
+        return(<li class="list-group-item">{d.user2===this.state.user? 'You': d['U2.name']} owes {d.user1===this.state.user? 'you': d['U1.name']} {numeral(-d.total).format('0,0.00')} {currency} in group {d.group}</li>);
+      }
+      else {
+        return(<li class="list-group-item">{d.user1===this.state.user? 'You': d['U1.name']} owes {d.user2===this.state.user? 'you': d['U2.name']} {numeral(d.total).format('0,0.00')} {currency} in group {d.group}</li>);
+      }
+    });
+    return (
       <div className="container">
         <h3>Dashboard</h3>
         <br />
@@ -110,6 +117,12 @@ class Dashboard extends Component {
             </table>
           </div>
         </div>
+        <br />
+        <h5>Details</h5>
+        { this.state.details.length === 0 && <div class="alert alert-info">You don't have group balance.</div>}
+        <ul class="list-group list-group-flush">
+          {detailsList}
+        </ul>
       </div>
     );
   }

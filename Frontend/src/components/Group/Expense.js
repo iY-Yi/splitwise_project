@@ -79,12 +79,12 @@ class Expense extends Component {
     let balances = this.state.balances.map((balance) => {
       if (balance.total > 0){
         return (
-          <li>{balance.U1.name} owes {balance.U2.name} {numeral(balance.total).format('0,0.00')} {currency}</li>
+          <li class="list-group-item">{balance.U1.name} owes {balance.U2.name} {numeral(balance.total).format('0,0.00')} {currency}</li>
         )
       }
       else if (balance.total < 0) {
         return (
-          <li>{balance.U2.name} owes {balance.U1.name} {numeral(-balance.total).format('0,0.00')} {currency}</li>
+          <li class="list-group-item">{balance.U2.name} owes {balance.U1.name} {numeral(-balance.total).format('0,0.00')} {currency}</li>
         )        
       }
     });
@@ -115,7 +115,7 @@ class Expense extends Component {
           <div class="col-md-4">
             <h5>Group Balances</h5>
             { this.state.balances.length === 0 && <div class="alert alert-info">No open balances.</div>}
-            <ul>
+            <ul class="list-group list-group-flush">
               {balances}
             </ul>
           </div>

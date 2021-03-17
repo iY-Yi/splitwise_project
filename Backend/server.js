@@ -90,10 +90,18 @@ app.get('/dashboard', (req, res) => {
         owed.push(data);
       }
     });
-    // console.log('owes: ', owes);
-    // console.log('owed:', owed);
+    // balance details
+    const details = await Balance.findAll({
+      where: {
+        [Op.and]: [{ clear: 0 }, { [Op.or]: [{ user1: req.query.user }, { user2: req.query.user }] }],
+      },
+      include: [{ model: User, as: 'U1', attributes: ['name'] }, { model: User, as: 'U2', attributes: ['name'] }],
+      group: ['user1', 'user2', 'group'],
+      attributes: ['user1', 'user2', 'group', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
+      raw: true,
+    });
     res.status(200).send({
-      owes, owed,
+      owes, owed, details,
     });
   })();
 });

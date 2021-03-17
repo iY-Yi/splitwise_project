@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { Sequelize } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 const {
   User, Group, GroupUser, Expense, Balance,
 } = require('./db_models');
@@ -94,11 +94,22 @@ groupRouter.get('/all', (req, res) => {
 // leave group
 groupRouter.post('/leave', (req, res) => {
   console.log(req.body);
-  Group.findByPk(req.body.groupName)
-    .then((p) => {
-      console.log(p);
-      p.count -= 1;
-      p.save();
+  Balance.findAll({
+    where: {
+      clear: 0,
+      group: req.body.groupName,
+      [Op.or]: { user1: req.body.userEmail, user2: req.body.userEmail },
+    },
+    group: ['user1', 'user2'],
+    attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
+    raw: true,
+  })
+    .then((data) => {
+      data.map((balance) => {
+        if (balance.total !== 0) {
+          throw new Error('OPEN_BALANCE');
+        }
+      });
     })
     .then(() => {
       GroupUser.destroy({
@@ -113,7 +124,7 @@ groupRouter.post('/leave', (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      res.status(400).send(JSON.stringify(err));
+      res.status(400).send(err);
     });
 });
 
@@ -122,17 +133,12 @@ groupRouter.post('/accept', (req, res) => {
   console.log(req.body);
   (async () => {
     try {
-      const data = await GroupUser.findOne({
+      await GroupUser.update({ accepted: 1 }, {
         where: {
           groupName: req.body.groupName,
           userEmail: req.body.userEmail,
         },
       });
-      data.accepted = 1;
-      await data.save();
-      const group = await Group.findByPk(req.body.groupName);
-      group.count += 1;
-      await group.save();
       res.status(200).end();
     } catch (err) {
       res.status(400).send(err);
