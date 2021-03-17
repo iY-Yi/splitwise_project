@@ -124,6 +124,7 @@ class NewGroup extends Component{
               <input type = "Button" value = "Save" class="btn btn-success btn-lg" onClick={this.submitSave}/>
               { this.state.saveStatus && this.state.message!=='' && <div class="alert alert-info">{this.state.message}</div>}
               <br />
+              <br />
               <h4>Invite User</h4>
               <input type="text" class="form-control" placeholder="Enter to search for a user" onChange={(e)=>this.searchUser(e)} />
               <table class="table">

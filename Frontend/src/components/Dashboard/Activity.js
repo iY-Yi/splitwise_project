@@ -23,6 +23,7 @@ class Activity extends Component {
     Axios.get('/activity', {
       params: {
         user: cookie.load('user'),
+        timezone: cookie.load('timezone'),
       },
     })
       .then((response) => {
@@ -45,6 +46,7 @@ class Activity extends Component {
   }
 
   render() {
+    const currency = cookie.load('currency');
     const groupList = this.state.groups.map((group) => (
       <option value={group}>{group}</option>
     ));
@@ -68,8 +70,8 @@ class Activity extends Component {
     })
     .map((activity) => (
       <tr>
-        <td>{activity.date}</td>
-        <td>{activity.user.name} paid {numeral(activity.amount).format('0,0.00')} for {activity.description} in group {activity.group}</td>
+        <td>{activity.formatDate}</td>
+        <td>{activity['user.name']} paid {numeral(activity.amount).format('0,0.00')} {currency} for {activity.description} in group {activity.group}</td>
       </tr>
     ));
 
@@ -101,6 +103,7 @@ class Activity extends Component {
           </div>
         </div>
         <br />
+        { this.state.activities.length === 0 && <div class="alert alert-info">No activities.</div>}
           <table className="table">
             <tbody>
               {activityList}

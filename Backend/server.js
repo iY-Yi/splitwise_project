@@ -90,16 +90,27 @@ app.get('/dashboard', (req, res) => {
         owed.push(data);
       }
     });
-    console.log('owes: ', owes);
-    console.log('owed:', owed);
+    // console.log('owes: ', owes);
+    // console.log('owed:', owed);
     res.status(200).send({
       owes, owed,
     });
   })();
 });
 
+// settle up transaction between two users
 app.post('/settle', (req, res) => {
-  res.status(200).end();
+  console.log(req.body);
+  // update clear flag to 1
+  (async () => {
+    await Balance.update({ clear: 1 }, {
+      where: {
+        [Op.or]: [{ [Op.and]: [{ user1: req.body.user }, { user2: req.body.user2 }] },
+          { [Op.and]: [{ user1: req.body.user2 }, { user2: req.body.user }] }],
+      },
+    });
+    res.status(200).end();
+  })();
 });
 
 // display all activities
@@ -114,14 +125,19 @@ app.get('/activity', (req, res) => {
       raw: true,
     });
     const groupNames = groups.map((group) => group.groupName);
-    console.log(groupNames);
+    // console.log(groupNames);
     const activities = await Expense.findAll({
       where: {
         group: groupNames,
       },
-      include: [{ model: User }],
+      include: [{ model: User, attributes: ['name'] }],
       order: [['date', 'DESC']],
+      raw: true,
     });
+    activities.map((act) => {
+      act.formatDate = act.date.toLocaleString('en-US', { timeZone: req.query.timezone });
+    });
+    console.log(activities);
     res.status(200).send({
       activities,
       groupNames,

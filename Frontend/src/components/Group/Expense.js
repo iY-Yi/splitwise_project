@@ -23,13 +23,16 @@ class Expense extends Component {
     const { group } = this.state;
     console.log(group);
     Axios.get(`/group/expense/${group}`, {
+      params: {
+        timezone: cookie.load('timezone'),
+      },
     })
       .then((response) => {
         // update the state with the response data
         // console.log(response.data.balances);
         this.setState({
-          expenses: this.state.expenses.concat(response.data.expenses),
-          balances: this.state.balances.concat(response.data.balances),
+          expenses: response.data.expenses,
+          balances: response.data.balances,
         });
         console.log(this.state.balances);
       });
@@ -53,6 +56,7 @@ class Expense extends Component {
       this.setState({
         message: "The expense is added",
       });
+      this.componentDidMount();
     })
     .catch((err) => {
       console.log(err);
@@ -60,13 +64,14 @@ class Expense extends Component {
   }
 
   render() {
+    const currency = cookie.load('currency');
     let expenses = this.state.expenses.map((expense) => {
       return(
           <tr>
             <td>{expense.date}</td>
             <td>{expense.description}</td>
-            <td>{expense.amount}</td>
-            <td>{expense.user.name} paid</td>
+            <td>{expense['user.name']} paid</td>
+            <td>{numeral(expense.amount).format('0,0.00')} {currency}</td>
           </tr>
       )      
     }); 
@@ -74,15 +79,14 @@ class Expense extends Component {
     let balances = this.state.balances.map((balance) => {
       if (balance.total > 0){
         return (
-          <li>{balance.U1.name} owes {balance.U2.name} {numeral(balance.total).format('0,0.00')}</li>
+          <li>{balance.U1.name} owes {balance.U2.name} {numeral(balance.total).format('0,0.00')} {currency}</li>
         )
       }
       else if (balance.total < 0) {
         return (
-          <li>{balance.U2.name} owes {balance.U1.name} {numeral(-balance.total).format('0,0.00')}</li>
+          <li>{balance.U2.name} owes {balance.U1.name} {numeral(-balance.total).format('0,0.00')} {currency}</li>
         )        
       }
-
     });
     return (
       <div className="container-fluid">
@@ -101,6 +105,7 @@ class Expense extends Component {
         <div class = "row">
           <div class="col-md-8">
             <h5>Expenses</h5>
+            { this.state.expenses.length === 0 && <div class="alert alert-info">No expenses.</div>}
             <table class="table">
               <tbody>
                 {expenses}
@@ -109,6 +114,7 @@ class Expense extends Component {
           </div>
           <div class="col-md-4">
             <h5>Group Balances</h5>
+            { this.state.balances.length === 0 && <div class="alert alert-info">No open balances.</div>}
             <ul>
               {balances}
             </ul>

@@ -26,7 +26,7 @@ class Signup extends Component{
       e.preventDefault();
       //this.setState({ submitted: true});
       const {user} = this.state;
-      console.log(user);
+      // console.log(user);
 
       this.props.userSignup(user);
       this.setState({

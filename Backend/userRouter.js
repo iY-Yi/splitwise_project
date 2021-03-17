@@ -20,6 +20,8 @@ userRouter.post('/signup', (req, res) => {
       const newUser = await User.create(req.body);
       // console.log(JSON.stringify(newUser));
       res.cookie('user', newUser.email, { maxAge: 86400000, httpOnly: false, path: '/' });
+      res.cookie('currency', newUser.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
+      res.cookie('timezone', newUser.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
       res.status(200).end(JSON.stringify(newUser));
     } catch (err) {
       console.log(err);
@@ -41,6 +43,8 @@ userRouter.post('/login', (req, res) => {
       if (match) {
       // 24 hours cookie
         res.cookie('user', user.email, { maxAge: 86400000, httpOnly: false, path: '/' });
+        res.cookie('currency', user.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
+        res.cookie('timezone', user.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
         res.status(200).end(JSON.stringify(user));
       } else {
         // res.status(401).end('Incorrect username or password.');
@@ -94,8 +98,10 @@ userRouter.post('/update', (req, res) => {
     await User.update(req.body, {
       where: { email },
     });
+    res.cookie('currency', req.body.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
+    res.cookie('timezone', req.body.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
+    res.status(200).end();
   })();
-  res.status(200).end();
 });
 
 module.exports = userRouter;

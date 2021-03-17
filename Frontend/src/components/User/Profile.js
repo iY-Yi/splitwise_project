@@ -1,6 +1,7 @@
 import Axios from 'axios';
 import React, {Component} from 'react';
 import cookie from 'react-cookies';
+import moment from 'moment-timezone'; 
 import {Redirect} from 'react-router';
 
 class Profile extends Component{
@@ -74,6 +75,12 @@ class Profile extends Component{
   }
 
   render(){
+    const timeZones = moment.tz.names().map((name) => {
+      console.log(name);
+      return(
+      <option value={name}>{name}</option>
+      )
+    });
     return(
       <div className="container-fluid">
         <h3>Your account</h3>
@@ -107,7 +114,7 @@ class Profile extends Component{
               </select><br/>
               <label for="timezone">Time zone:</label><br/>
               <select class="form-control" name="timezone" id="timezone" value={this.state.user.timezone} disabled={this.state.disabled} onChange={this.handleChange}>
-                <option value="todo">ToDo</option>
+                {timeZones}
               </select><br/>               
               <label for="language">Language:</label><br/>
               <select class="form-control" name="language" id="language" value={this.state.user.language} disabled={this.state.disabled} onChange={this.handleChange}>

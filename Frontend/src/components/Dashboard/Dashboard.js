@@ -54,6 +54,7 @@ class Dashboard extends Component {
       Axios.post('/settle', data)
       .then((response) => {
         this.setState({ message: 'Balance is settled.' });
+        this.componentDidMount();
       });
     }
   }
@@ -62,12 +63,13 @@ class Dashboard extends Component {
     if (!cookie.load('user')) {
       return <Redirect to="/landing" />;
     }
+    const currency = cookie.load('currency');
     const owesList = this.state.owes
       .map((record) => (
         <tr>
           <td><input type="radio" class="form-check-input" name="selectRow" value={record.email} onClick={this.selectRow} /></td>
           <td>{record.name}</td>
-          <td>{numeral(record.balance).format('0,0.00')}</td>
+          <td>{numeral(record.balance).format('0,0.00')} {currency}</td>
         </tr>
       ));
 
@@ -76,7 +78,7 @@ class Dashboard extends Component {
         <tr>
           <td><input type="radio" class="form-check-input" name="selectRow" value={record.email} onClick={this.selectRow} /></td>
           <td>{record.name}</td>
-          <td>{numeral(record.balance).format('0,0.00')}</td>
+          <td>{numeral(record.balance).format('0,0.00')} {currency}</td>
         </tr>
       ));
     return (
@@ -91,7 +93,8 @@ class Dashboard extends Component {
         <div className="row">
           <div className="col-md-6">
             <h5>You Owe</h5>
-            <table className="table">
+            { this.state.owes.length === 0 && <div class="alert alert-info">You don't owes.</div>}
+            <table className="table table-hover">
               <tbody>
                 {owesList}
               </tbody>
@@ -99,6 +102,7 @@ class Dashboard extends Component {
           </div>
           <div className="col-md-6">
             <h5>You are Owed</h5>
+            { this.state.owed.length === 0 && <div class="alert alert-info">You are not owned.</div>}
             <table className="table table-hover">
               <tbody>
                 {owedList}

@@ -144,14 +144,21 @@ groupRouter.get('/expense/:group', (req, res) => {
   const { group } = req.params;
   (async () => {
     const expenses = await Expense.findAll({
-      // attributes:['date', 'email', 'description', 'amount'],
+      attributes: ['date', 'email', 'description', 'amount'],
       where: {
         group,
       },
       include: [{
         model: User,
+        attributes: ['name'],
       }],
       order: [['date', 'DESC']],
+      raw: true,
+    });
+    expenses.map((exp) => {
+      exp.date = exp.date.toLocaleString('en-US', { timeZone: req.query.timezone });
+      // console.log(exp.formatDate);
+      console.log(exp);
     });
     const balances = await Balance.findAll({
       where: {
@@ -162,7 +169,7 @@ groupRouter.get('/expense/:group', (req, res) => {
       group: ['user1', 'user2'],
       attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
     });
-    console.log(balances);
+    // console.log(balances);
     res.status(200).send({
       expenses,
       balances,

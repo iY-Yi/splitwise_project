@@ -15,6 +15,8 @@ class Navbar extends Component {
 
   handleLogout = () => {
       cookie.remove('user', { path: '/' })
+      cookie.remove('currency', { path: '/' })
+      cookie.remove('timezone', { path: '/' })
       this.props.userLogout();
   }
 
@@ -24,45 +26,36 @@ class Navbar extends Component {
     if (cookie.load('user')) {
       // console.log('Able to read cookie');
       navLogin = (
-        <ul className="nav navbar-nav navbar-right">
-          <li>
-            <Link to="/dashboard">
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link to="/user/profile">
-              Profile
-            </Link>
-          </li>
-          <li>
-            <Link to="/landing" onClick={this.handleLogout}>
-              <span className="glyphicon glyphicon-user" />
-              Logout
-            </Link>
-          </li>
-        </ul>
+          <ul className="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/dashboard">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/group/all">Groups</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/activity">Activity</a>
+            </li>                    
+            <li class="nav-item">
+              <a class="nav-link" href="/user/profile">Profile</a>
+            </li>          
+            <li class="nav-item">
+              <a class="nav-link" href="/landing" onClick={this.handleLogout}>Logout</a>
+            </li>
+          </ul>
       );
     } else {
       // Else display login button
       // console.log('Not Able to read cookie');
       navLogin = (
-        <ul className="nav navbar-nav navbar-right">
-          <li>
-            <Link to="/user/signup">
-              {/* <span className="glyphicon glyphicon-log-in" />
-              {' '} */}
-              Sign Up
-            </Link>
-          </li>
-          <li>
-            <Link to="/user/login">
-              {/* <span className="glyphicon glyphicon-log-in" />
-              {' '} */}
-              Login
-            </Link>
-          </li>
-        </ul>
+          <ul className="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/user/signup">Sign Up</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/login">Log in</a>
+            </li>          
+          </ul>
       );
     }
     // let redirectVar = null;
@@ -75,15 +68,11 @@ class Navbar extends Component {
     return (
       <div>
         {/* {redirectVar} */}
-        <nav className="navbar navbar-inverse">
+        <nav className="navbar navbar-inverse navbar-expand-sm bg-light navbar-light">
           <div className="container-fluid">
             <div className="navbar-header">
-              <a className="navbar-brand">Splitwise</a>
+              <a className="navbar-brand" href="/landing">Splitwise</a>
             </div>
-            {/* <ul class="nav navbar-nav">
-            <li class="active"><Link to="/home">Home</Link></li>
-            <li><Link to="/new">Sign Up</Link></li>
-            </ul> */}
             {navLogin}
           </div>
         </nav>

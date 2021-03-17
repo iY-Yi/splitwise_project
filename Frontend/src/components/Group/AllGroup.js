@@ -93,17 +93,22 @@ class AllGroup extends Component{
       <div className="container-fluid">
         <h3>My Groups</h3>
         { this.state.message!=='' && <div class="alert alert-info">{this.state.message}</div>}
+ 
+        <a class="btn btn-info" href="/group/new">New Group</a>
+        <br />
+        <br />
         <table class="table table-striped">
-          <label>Pending Invites</label>
+          <h5>Pending Invites</h5>
+          { this.state.invites.length === 0 && <div class="alert alert-info">No pending invites.</div>}
           <tbody>
             {invites}
           </tbody>
         </table>
-        <p>Search Group</p>
+        <h5>Search Group</h5>
         <input type="text" class="form-control" placeholder="Search a group" onChange={(e)=>this.searchGroup(e)} />
         <br />
         <table class="table table-striped">
-          <label>Accepted Groups</label>
+          <h5>Joined Groups</h5>
           <tbody>
             {allGroup}
           </tbody>
