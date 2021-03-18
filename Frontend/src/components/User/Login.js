@@ -51,11 +51,11 @@ class Login extends Component{
             <h3>Log In</h3>
               <form id="userLogin" onSubmit={this.submitLogin}>
               { this.state.submitFlag === true && message!=='' && <div class="alert alert-danger">{message}</div>}
-                <label for="email">Email:</label><br/>
-                <input class="form-control" type="email" id="email" name="email" placeholder="name@example.com" onChange={this.handleChange}/><br/>
-                <label for="password">Password:</label><br/>
-                <input class="form-control" type="password" id="password" name="password" onChange={this.handleChange}/><br/>
-                <input type = "submit" value = "Submit" class="btn btn-primary"/>
+                <label>Email:</label><br/>
+                <input className="form-control" type="email" id="email" name="email" placeholder="name@example.com" onChange={this.handleChange}/><br/>
+                <label>Password:</label><br/>
+                <input className="form-control" type="password" id="password" name="password" onChange={this.handleChange}/><br/>
+                <input type = "submit" value = "Submit" className="btn btn-primary"/>
               </form>
         </div>
       </div>

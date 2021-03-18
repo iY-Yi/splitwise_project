@@ -61,14 +61,14 @@ class Signup extends Component{
               <div className="container">
                   <h2>New User</h2>
                       <form id="userSignUp" onSubmit={this.handleSubmit}>
-                      { this.state.submitted === true && message!=='' && <div class="alert alert-danger">{message}</div>}
-                          <label for="name">Name:</label><br/>
-                          <input class="form-control" type="text" id="name" name="name" onChange={this.handleChange}/><br/>
-                          <label for="email">Email:</label><br/>
-                          <input class="form-control" type="email" id="email" name="email" placeholder="name@example.com" onChange={this.handleChange}/><br/>
-                          <label for="password">Password:</label><br/>
-                          <input class="form-control" type="password" id="password" name="password" onChange={this.handleChange}/><br/>
-                          <input type = "submit" value = "Submit" class="btn btn-primary"/>
+                      { this.state.submitted === true && message!=='' && <div className="alert alert-danger">{message}</div>}
+                          <label>Name:</label><br/>
+                          <input className="form-control" type="text" id="name" name="name" onChange={this.handleChange}/><br/>
+                          <label>Email:</label><br/>
+                          <input className="form-control" type="email" id="email" name="email" placeholder="name@example.com" onChange={this.handleChange}/><br/>
+                          <label>Password:</label><br/>
+                          <input className="form-control" type="password" id="password" name="password" onChange={this.handleChange}/><br/>
+                          <input type = "submit" value = "Submit" className="btn btn-primary"/>
                       </form>
               </div>
           </div>

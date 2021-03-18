@@ -108,7 +108,7 @@ app.get('/dashboard', (req, res) => {
 
 // settle up transaction between two users
 app.post('/settle', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   // update clear flag to 1
   (async () => {
     await Balance.update({ clear: 1 }, {
@@ -145,7 +145,7 @@ app.get('/activity', (req, res) => {
     activities.map((act) => {
       act.formatDate = act.date.toLocaleString('en-US', { timeZone: req.query.timezone });
     });
-    console.log(activities);
+    // console.log(activities);
     res.status(200).send({
       activities,
       groupNames,
@@ -169,5 +169,7 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
+
+module.exports = app;
 
 app.listen(port, () => console.log(`Backend server listening on port ${port}!`));

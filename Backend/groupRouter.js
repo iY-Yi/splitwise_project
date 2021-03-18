@@ -41,7 +41,7 @@ groupRouter.post('/upload', (req, res) => {
 // create new group
 groupRouter.post('/new', (req, res) => {
   req.body.count = 1;
-  console.log(req.body);
+  // console.log(req.body);
 
   Group.create(req.body)
     .then(() => {
@@ -53,7 +53,7 @@ groupRouter.post('/new', (req, res) => {
     })
     .then(() => res.status(200).end())
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
       res.status(400).send(JSON.stringify(err));
     });
 });
@@ -70,7 +70,7 @@ groupRouter.post('/invite', (req, res) => {
 
 // display all groups
 groupRouter.get('/all', (req, res) => {
-  console.log(req.query);
+  // console.log(req.query);
   (async () => {
     const invites = await GroupUser.findAll({
       where: {
@@ -93,7 +93,7 @@ groupRouter.get('/all', (req, res) => {
 
 // leave group
 groupRouter.post('/leave', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   Balance.findAll({
     where: {
       clear: 0,
@@ -123,14 +123,14 @@ groupRouter.post('/leave', (req, res) => {
       res.status(200).end();
     })
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
       res.status(400).send(err);
     });
 });
 
 // Accept group invite
-groupRouter.post('/accept', (req, res) => {
-  console.log(req.body);
+groupRouter.put('/accept', (req, res) => {
+  // console.log(req.body);
   (async () => {
     try {
       await GroupUser.update({ accepted: 1 }, {
@@ -164,7 +164,7 @@ groupRouter.get('/expense/:group', (req, res) => {
     expenses.map((exp) => {
       exp.date = exp.date.toLocaleString('en-US', { timeZone: req.query.timezone });
       // console.log(exp.formatDate);
-      console.log(exp);
+      // console.log(exp);
     });
     const balances = await Balance.findAll({
       where: {
@@ -185,7 +185,7 @@ groupRouter.get('/expense/:group', (req, res) => {
 
 // add new expense
 groupRouter.post('/expense/add', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   (async () => {
     try {
       // add to expense table

@@ -38,7 +38,7 @@ class AllGroup extends Component{
       groupName: e.target.value,
       userEmail: this.state.user,
     };
-    Axios.post('/group/accept', data)
+    Axios.put('/group/accept', data)
     .then(()=> {
       this.setState({ message: 'Join group successfully.' });
       this.componentDidMount();

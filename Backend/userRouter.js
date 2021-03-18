@@ -12,7 +12,7 @@ userRouter.post('/signup', (req, res) => {
   req.body.avatar = '/default.jpg';
   req.body.currency = 'USD';
   req.body.language = 'English';
-  console.log(req.body);
+  // console.log(req.body);
   (async () => {
     try {
       const salt = await bcrypt.genSalt(saltRound);
@@ -24,14 +24,14 @@ userRouter.post('/signup', (req, res) => {
       res.cookie('timezone', newUser.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
       res.status(200).end(JSON.stringify(newUser));
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       res.status(400).end(JSON.stringify(err));
     }
   })();
 });
 
 userRouter.post('/login', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   (async () => {
     try {
       const user = await User.findOne({
@@ -39,7 +39,7 @@ userRouter.post('/login', (req, res) => {
       });
       // const user = users[0];
       const match = await bcrypt.compare(req.body.password, user.password);
-      console.log(req.body.password, user.password, match);
+      // console.log(req.body.password, user.password, match);
       if (match) {
       // 24 hours cookie
         res.cookie('user', user.email, { maxAge: 86400000, httpOnly: false, path: '/' });
@@ -51,7 +51,7 @@ userRouter.post('/login', (req, res) => {
         throw new Error('WRONG_PASSWORD');
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       res.status(401).send('WRONG_PASSWORD');
     }
   })();
@@ -64,7 +64,7 @@ userRouter.get('/profile/:email', (req, res) => {
       where: { email },
     });
     const user = users[0];
-    console.log('Profile:', JSON.stringify(user));
+    // console.log('Profile:', JSON.stringify(user));
     res.status(200).end(JSON.stringify(user));
   })();
 });
@@ -91,8 +91,8 @@ userRouter.post('/upload', (req, res) => {
   });
 });
 
-userRouter.post('/update', (req, res) => {
-  console.log(req.body);
+userRouter.put('/update', (req, res) => {
+  // console.log(req.body);
   const { email } = req.body;
   (async () => {
     await User.update(req.body, {

@@ -19,7 +19,7 @@ class Activity extends Component {
   // get all users from backend
   componentDidMount() {
     const { group } = this.state;
-    console.log(group);
+    // console.log(group);
     Axios.get('/activity', {
       params: {
         user: cookie.load('user'),
@@ -82,20 +82,20 @@ class Activity extends Component {
         </h3>
         { this.state.message !== '' && <div className="alert alert-info">{this.state.message}</div>}
         <br />
-        <div class="row">
-          <div class="col-sm-2">
+        <div className="row">
+          <div className="col-sm-2">
             <label>Filter group: </label>
           </div>
-          <div class="col-sm-4">
+          <div className="col-sm-4">
             <select className="form-control" name="group" id="group" value={this.state.filterGroup} onChange={this.filterGroup}>
               <option value=''>All groups</option>
               {groupList}
             </select>
           </div>
-          <div class="col-sm-2">
+          <div className="col-sm-2">
             <label>Sort: </label>
           </div>
-          <div class="col-sm-4">
+          <div className="col-sm-4">
             <select className="form-control" name="sort" id="sort" value={this.state.sort} onChange={this.sorting}>
               <option value='desc'>Most recent first</option>
               <option value='asc'>Most recent last</option>
@@ -103,7 +103,7 @@ class Activity extends Component {
           </div>
         </div>
         <br />
-        { this.state.activities.length === 0 && <div class="alert alert-info">No activities.</div>}
+        { this.state.activities.length === 0 && <div className="alert alert-info">No activities.</div>}
           <table className="table">
             <tbody>
               {activityList}

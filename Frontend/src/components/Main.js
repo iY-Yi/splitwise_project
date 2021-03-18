@@ -10,6 +10,7 @@ import Navbar from './LandingPage/Navbar';
 import Landing from './LandingPage/Landing';
 import Dashboard from './Dashboard/Dashboard';
 import Activity from './Dashboard/Activity';
+import {Redirect} from 'react-router';
 
 // Create a Main Component
 class Main extends Component {
@@ -17,6 +18,7 @@ class Main extends Component {
     return (
       <div>
         {/* Render Different Component based on Route */}
+        <Route exact path="/"><Redirect to="/landing" /></Route>
         <Route path="/" component={Navbar} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/user/signup" component={Signup} />

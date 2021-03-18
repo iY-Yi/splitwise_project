@@ -21,10 +21,11 @@ class Expense extends Component {
   // get all users from backend
   componentDidMount() {
     const { group } = this.state;
-    console.log(group);
+    // console.log(group);
+    let timezone = cookie.load('timezone')? cookie.load('timezone'):'';
     Axios.get(`/group/expense/${group}`, {
       params: {
-        timezone: cookie.load('timezone'),
+        timezone: timezone,
       },
     })
       .then((response) => {
@@ -34,7 +35,7 @@ class Expense extends Component {
           expenses: response.data.expenses,
           balances: response.data.balances,
         });
-        console.log(this.state.balances);
+        // console.log(this.state.balances);
       });
   }
 
@@ -59,7 +60,10 @@ class Expense extends Component {
       this.componentDidMount();
     })
     .catch((err) => {
-      console.log(err);
+      this.setState({
+        message: err,
+      });
+      // console.log(err);
     })
   }
 
