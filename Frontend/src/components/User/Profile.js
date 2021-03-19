@@ -46,19 +46,21 @@ class Profile extends Component{
   submitSave = async(e) => {
     e.preventDefault();
     // upload avatar image
-    if (this.state.fileSelected != '') {
-      const data = new FormData();
-      data.append('file', this.state.fileSelected);
-      const res = await Axios.post('/user/upload', data);
-      const user = this.state.user;
-      user['avatar'] = `/images/${res.data}`;
-      this.setState({user});
-    }
 
-    // update in database
-    const {user} = this.state;
     // console.log(user);
     try {
+      if (this.state.fileSelected != '') {
+        const data = new FormData();
+        data.append('file', this.state.fileSelected);
+        const res = await Axios.post('/user/upload', data);
+        const user = this.state.user;
+        user['avatar'] = `/images/${res.data}`;
+        this.setState({user});
+      }
+  
+      // update in database
+      const {user} = this.state;
+
       const response = await Axios.put("/user/update", user)
       // console.log("Profile saved: ", response.status);
       this.setState({ saveStatus: true, disabled: true});
