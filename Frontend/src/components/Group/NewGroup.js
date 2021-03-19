@@ -44,6 +44,8 @@ class NewGroup extends Component{
   }
 
   inviteUser = (e) => {
+    this.setState({
+      inviteMsg : ''});    
     const inviteData= {
       groupName: this.state.name,
       userEmail: e.target.value,

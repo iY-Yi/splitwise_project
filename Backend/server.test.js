@@ -21,6 +21,13 @@ describe('PUT accept group invite API call', () => {
   });
 });
 
+describe('GET user profile API call', () => {
+  it('should return user profile with specific email', async () => {
+    const res = await agent.get('/user/profile/test@gmail.com');
+    expect(res.body.email).to.equal('test@gmail.com');
+  });
+});
+
 describe('GET group expenses API call', () => {
   it('should return expenses with status 200', async () => {
     const res = await agent.get('/group/expense/test2');
@@ -31,17 +38,21 @@ describe('GET group expenses API call', () => {
 describe('POST add expense API call', () => {
   it('should return status 200', async () => {
     const res = await agent.post('/group/expense/add')
-      .send({ group: 'test2',
+      .send({
+        group: 'test2',
         description: 'grocery',
         amount: 30,
-        email: 'admin@gmail.com' });
+        email: 'admin@gmail.com',
+      });
     expect(res).to.have.status(200);
   });
 });
 
-describe('GET user activity API call', () => {
-  it('should return activities with status 200', async () => {
-    const res = await agent.get('/activity').query({ user: 'admin@gmail.com' });
-    expect(res).to.have.status(200);
-  });
-});
+// describe('GET user activity API call', () => {
+//   it('should return activities with status 200', async () => {
+//     const res = await agent.get('/activity').query({ user: 'admin@gmail.com' });
+//     expect(res).to.have.status(200);
+//   });
+// });
+
+

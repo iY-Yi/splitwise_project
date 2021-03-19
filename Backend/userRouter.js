@@ -12,6 +12,7 @@ userRouter.post('/signup', (req, res) => {
   req.body.avatar = '/default.jpg';
   req.body.currency = 'USD';
   req.body.language = 'English';
+  req.body.timezone = 'US/Pacific';
   // console.log(req.body);
   (async () => {
     try {
@@ -65,7 +66,7 @@ userRouter.get('/profile/:email', (req, res) => {
     });
     const user = users[0];
     // console.log('Profile:', JSON.stringify(user));
-    res.status(200).end(JSON.stringify(user));
+    res.status(200).send(user);
   })();
 });
 

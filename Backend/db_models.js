@@ -6,7 +6,7 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
   dialect: 'mysql',
   logging: false, // disable logging; defailt: console.log
   // pool: {
-  //   max: 5, min: 0, idle: 30000,
+  //   max: 30, min: 0, idle: 10000,
   // },
 });
 
