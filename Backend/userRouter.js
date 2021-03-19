@@ -92,7 +92,7 @@ userRouter.post('/upload', (req, res) => {
   });
 });
 
-userRouter.put('/update', (req, res) => {
+userRouter.post('/update', (req, res) => {
   // console.log(req.body);
   const { email } = req.body;
   (async () => {

@@ -61,7 +61,7 @@ class Profile extends Component{
       // update in database
       const {user} = this.state;
 
-      const response = await Axios.put("/user/update", user)
+      const response = await Axios.post("/user/update", user)
       // console.log("Profile saved: ", response.status);
       this.setState({ saveStatus: true, disabled: true});
       }
