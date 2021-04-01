@@ -21,11 +21,14 @@ class NewGroup extends Component{
   componentDidMount(){
     Axios.get('/group/new')
       .then((response) => {
-      //update the state with the response data
-      this.setState({
-        users : this.state.users.concat(response.data) 
+        //update the state with the response data
+        this.setState({
+          users : this.state.users.concat(response.data) 
+        })
+      })
+      .catch((e) => {
+        this.setState({ message: 'Loading failed!'});
       });
-  });
   }
 
   handleChange = (e) => {
@@ -50,6 +53,7 @@ class NewGroup extends Component{
       groupName: this.state.name,
       userEmail: e.target.value,
       accepted: 0,
+      requestor: cookie.load('user'),
     }
     Axios.post('/group/invite', inviteData)
     .then((response)=>{
@@ -57,8 +61,9 @@ class NewGroup extends Component{
         inviteMsg : 'The user is invited.'});
     })
     .catch((err) => {
+      console.log(err);
       this.setState({
-        inviteMsg: err
+        inviteMsg: 'Failed! Unauthorized',
       })
     });
   }
@@ -89,11 +94,14 @@ class NewGroup extends Component{
       }
     catch (e) {
       console.log(e);
-      this.setState({saveStatus: false});
+      this.setState({saveStatus: false, message: 'Failed! Duplicate_Name', });
     }
   }
 
   render(){
+    if (!cookie.load('user')) {
+      return <Redirect to="/landing" />;
+    }
     let searchMembers = this.state.users.filter((data) => {
       if (this.state.search !== '' && (data.name.toLowerCase().includes(this.state.search.toLowerCase()) ||
       data.email.toLowerCase().includes(this.state.search.toLowerCase()))){
@@ -126,10 +134,10 @@ class NewGroup extends Component{
           <div className="col-md-8">
             <form>
               <label>Group Name</label><br/>
-              <input className="form-control" type="text" id="name" name="name" value={this.state.name} onChange={this.handleChange}/><br/>
+              <input className="form-control" type="text" id="name" name="name" value={this.state.name} onChange={this.handleChange} disabled={this.state.saveStatus}/><br/>
               <input type = "Button" value = "Save" readOnly className="btn btn-success btn-lg" onClick={this.submitSave}/>
               <br />
-              { this.state.saveStatus && this.state.message!=='' && <div className="alert alert-info">{this.state.message}</div>}
+              { this.state.message!=='' && <div className="alert alert-info">{this.state.message}</div>}
               <br />
               <h4>Invite User</h4>
               { this.state.inviteMsg!=='' && <div className="alert alert-info">{this.state.inviteMsg}</div>}

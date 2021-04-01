@@ -53,56 +53,60 @@ app.use('/group', groupRoutes);
 // display transactions in dashboard
 app.get('/dashboard', (req, res) => {
   (async () => {
-    const balances = await Balance.findAll({
-      where: {
-        [Op.and]: [{ clear: 0 }, { [Op.or]: [{ user1: req.query.user }, { user2: req.query.user }] }],
-      },
-      include: [{ model: User, as: 'U1', attributes: ['name'] }, { model: User, as: 'U2', attributes: ['name'] }],
-      group: ['user1', 'user2'],
-      attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
-      raw: true,
-    });
-    // split data to owes and owed
-    const owes = [];
-    const owed = [];
-    balances.map((data) => {
-      if ((data.user1 === req.query.user && data.total > 0) || (data.user2 === req.query.user && data.total < 0)) {
-        if (data.total < 0) {
-          data.balance = -data.total;
-          data.email = data.user1;
-          data.name = data['U1.name'];
+    try {
+      const balances = await Balance.findAll({
+        where: {
+          [Op.and]: [{ clear: 0 }, { [Op.or]: [{ user1: req.query.user }, { user2: req.query.user }] }],
+        },
+        include: [{ model: User, as: 'U1', attributes: ['name'] }, { model: User, as: 'U2', attributes: ['name'] }],
+        group: ['user1', 'user2'],
+        attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
+        raw: true,
+      });
+      // split data to owes and owed
+      const owes = [];
+      const owed = [];
+      balances.map((data) => {
+        if ((data.user1 === req.query.user && data.total > 0) || (data.user2 === req.query.user && data.total < 0)) {
+          if (data.total < 0) {
+            data.balance = -data.total;
+            data.email = data.user1;
+            data.name = data['U1.name'];
+          } else {
+            data.balance = data.total;
+            data.email = data.user2;
+            data.name = data['U2.name'];
+          }
+          owes.push(data);
         } else {
-          data.balance = data.total;
-          data.email = data.user2;
-          data.name = data['U2.name'];
+          if (data.total < 0) {
+            data.balance = -data.total;
+            data.email = data.user2;
+            data.name = data['U2.name'];
+          } else {
+            data.balance = data.total;
+            data.email = data.user1;
+            data.name = data['U1.name'];
+          }
+          owed.push(data);
         }
-        owes.push(data);
-      } else {
-        if (data.total < 0) {
-          data.balance = -data.total;
-          data.email = data.user2;
-          data.name = data['U2.name'];
-        } else {
-          data.balance = data.total;
-          data.email = data.user1;
-          data.name = data['U1.name'];
-        }
-        owed.push(data);
-      }
-    });
-    // balance details
-    const details = await Balance.findAll({
-      where: {
-        [Op.and]: [{ clear: 0 }, { [Op.or]: [{ user1: req.query.user }, { user2: req.query.user }] }],
-      },
-      include: [{ model: User, as: 'U1', attributes: ['name'] }, { model: User, as: 'U2', attributes: ['name'] }],
-      group: ['user1', 'user2', 'group'],
-      attributes: ['user1', 'user2', 'group', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
-      raw: true,
-    });
-    res.status(200).send({
-      owes, owed, details,
-    });
+      });
+      // balance details
+      const details = await Balance.findAll({
+        where: {
+          [Op.and]: [{ clear: 0 }, { [Op.or]: [{ user1: req.query.user }, { user2: req.query.user }] }],
+        },
+        include: [{ model: User, as: 'U1', attributes: ['name'] }, { model: User, as: 'U2', attributes: ['name'] }],
+        group: ['user1', 'user2', 'group'],
+        attributes: ['user1', 'user2', 'group', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
+        raw: true,
+      });
+      res.status(200).send({
+        owes, owed, details,
+      });
+    } catch (err) {
+      res.status(400).end();
+    }
   })();
 });
 
@@ -111,45 +115,53 @@ app.post('/settle', (req, res) => {
   // console.log(req.body);
   // update clear flag to 1
   (async () => {
-    await Balance.update({ clear: 1 }, {
-      where: {
-        [Op.or]: [{ [Op.and]: [{ user1: req.body.user }, { user2: req.body.user2 }] },
-          { [Op.and]: [{ user1: req.body.user2 }, { user2: req.body.user }] }],
-      },
-    });
-    res.status(200).end();
+    try {
+      await Balance.update({ clear: 1 }, {
+        where: {
+          [Op.or]: [{ [Op.and]: [{ user1: req.body.user }, { user2: req.body.user2 }] },
+            { [Op.and]: [{ user1: req.body.user2 }, { user2: req.body.user }] }],
+        },
+      });
+      res.status(200).end();
+    } catch (e) {
+      res.status(400).end();
+    }
   })();
 });
 
 // display all activities
 app.get('/activity', (req, res) => {
   (async () => {
-    const groups = await GroupUser.findAll({
-      attributes: ['groupName'],
-      where: {
-        userEmail: req.query.user,
-        accepted: 1,
-      },
-      raw: true,
-    });
-    const groupNames = groups.map((group) => group.groupName);
-    // console.log(groupNames);
-    const activities = await Expense.findAll({
-      where: {
-        group: groupNames,
-      },
-      include: [{ model: User, attributes: ['name'] }],
-      order: [['date', 'DESC']],
-      raw: true,
-    });
-    activities.map((act) => {
-      act.formatDate = act.date.toLocaleString('en-US', { timeZone: req.query.timezone });
-    });
-    // console.log(activities);
-    res.status(200).send({
-      activities,
-      groupNames,
-    });
+    try {
+      const groups = await GroupUser.findAll({
+        attributes: ['groupName'],
+        where: {
+          userEmail: req.query.user,
+          accepted: 1,
+        },
+        raw: true,
+      });
+      const groupNames = groups.map((group) => group.groupName);
+      // console.log(groupNames);
+      const activities = await Expense.findAll({
+        where: {
+          group: groupNames,
+        },
+        include: [{ model: User, attributes: ['name'] }],
+        order: [['date', 'DESC']],
+        raw: true,
+      });
+      activities.map((act) => {
+        act.formatDate = act.date.toLocaleString('en-US', { timeZone: req.query.timezone });
+      });
+      // console.log(activities);
+      res.status(200).send({
+        activities,
+        groupNames,
+      });
+    } catch (e) {
+      res.status(400).end();
+    }
   })();
 });
 

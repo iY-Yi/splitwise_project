@@ -20,13 +20,16 @@ class AllGroup extends Component{
       }
     })
     .then((response) => {
-    //update the state with the response data
-    // console.log(response);
-    this.setState({
-      invites : response.data.invites,
-      groups : response.data.groups,
+      //update the state with the response data
+      // console.log(response);
+      this.setState({
+        invites : response.data.invites,
+        groups : response.data.groups,
+      });
+    })
+    .catch((err) => {
+      this.setState({ message: 'Data loading failed!'});
     });
-  });
   }
 
   searchGroup = (e) => {
@@ -45,6 +48,7 @@ class AllGroup extends Component{
     })
     .catch((err) => {
       console.log(err);
+      this.setState({ message: 'Join group failed!'});
     })
   }
 
@@ -64,6 +68,9 @@ class AllGroup extends Component{
   }
 
   render(){
+    if (!cookie.load('user')) {
+      return <Redirect to="/landing" />;
+    }
     let allGroup = this.state.groups.filter((group)=> {
       if (group.groupName.toLowerCase().includes(this.state.search.toLowerCase())) {
         return group;

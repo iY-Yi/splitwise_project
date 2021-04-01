@@ -4,6 +4,7 @@ import {Redirect} from 'react-router';
 import { userSignup } from '../../js/actions/signupAction';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import cookie from 'react-cookies';
 
 class Signup extends Component{
   state = {
@@ -46,6 +47,9 @@ class Signup extends Component{
   }
 
   render(){
+    if (cookie.load('user')) {
+      return <Redirect to="/dashboard" />;
+    }
     // console.log('In signup', this.props);
     let message = '';
     if (this.state.submitted === true && this.props.user && this.props.user.email) {

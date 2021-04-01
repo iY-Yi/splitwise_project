@@ -4,6 +4,7 @@ import {Redirect} from 'react-router';
 import { userLogin } from '../../js/actions/loginAction';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import cookie from 'react-cookies';
 
 class Login extends Component{
 
@@ -32,6 +33,9 @@ class Login extends Component{
   }
 
   render(){
+    if (cookie.load('user')) {
+      return <Redirect to="/dashboard" />;
+    }
     // console.log('props:', this.props);
     let message = '';
     if (this.props.user && this.props.user.email) {

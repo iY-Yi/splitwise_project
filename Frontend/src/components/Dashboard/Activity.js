@@ -2,7 +2,7 @@ import Axios from 'axios';
 import React, { Component } from 'react';
 import cookie from 'react-cookies';
 import numeral from 'numeral';
-// import { Redirect } from 'react-router';
+import { Redirect } from 'react-router';
 
 class Activity extends Component {
   constructor(props) {
@@ -34,6 +34,9 @@ class Activity extends Component {
           groups: response.data.groupNames,
           sort: 'desc',
         });
+      })
+      .catch((err) => {
+        this.setState({ message: 'Loading_Failed' });
       });
   }
 
@@ -46,6 +49,9 @@ class Activity extends Component {
   }
 
   render() {
+    if (!cookie.load('user')) {
+      return <Redirect to="/landing" />;
+    }    
     const currency = cookie.load('currency');
     const groupList = this.state.groups.map((group) => (
       <option value={group}>{group}</option>
@@ -75,7 +81,7 @@ class Activity extends Component {
       </tr>
     ));
 
-    return (
+    return (    
       <div className="container-fluid">
         <h3>
           Recent activity

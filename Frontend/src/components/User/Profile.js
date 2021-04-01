@@ -25,10 +25,13 @@ class Profile extends Component{
     const id = cookie.load('user');
     // console.log(id);
     Axios.get(`/user/profile/${id}`)
-            .then((response) => {
-            this.setState({ user : response.data });
-            // console.log(this.state);
-        });
+    .then((response) => {
+      this.setState({ user : response.data, error: '', });
+      // console.log(this.state);
+    })
+    .catch((err) => {
+      this.setState({error: 'Profile loading failed.'});
+    });
   }
 
   handleChange = (e) => {
@@ -63,11 +66,12 @@ class Profile extends Component{
 
       const response = await Axios.post("/user/update", user)
       // console.log("Profile saved: ", response.status);
-      this.setState({ saveStatus: true, disabled: true});
+      this.setState({ saveStatus: true, disabled: true, error: '', });
       }
     catch (e) {
       // console.log(e);
-      this.setState({saveStatus: false});
+      this.setState({saveStatus: false,
+        error: 'Profile save failed.',});
     }
   }
 
@@ -77,6 +81,9 @@ class Profile extends Component{
   }
 
   render(){
+    if (!cookie.load('user')) {
+      return <Redirect to="/landing" />;
+    }
     const timeZones = moment.tz.names().map((name) => {
       return(
       <option value={name} key={name}>{name}</option>
@@ -86,7 +93,7 @@ class Profile extends Component{
       <div className="container-fluid">
         <h3>Your account</h3>
         <form id="profile" onSubmit={this.submitSave}>
-        {/* { this.state.authFlag === false && <div class="alert alert-danger">Log in failed!</div>} */}
+        { this.state.error !== '' && <div class="alert alert-danger">{this.state.error}</div>}
           <div className = "row">
             <div className="col-md-4 border-right">
               <div className="d-flex flex-column align-items-center text-center p-3 py-5">

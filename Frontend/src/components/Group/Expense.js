@@ -15,6 +15,7 @@ class Expense extends Component {
       description: '',
       amount: -1,
       message: '',
+      authorized: false,
     };
   }
 
@@ -26,6 +27,7 @@ class Expense extends Component {
     Axios.get(`/group/expense/${group}`, {
       params: {
         timezone: timezone,
+        user: cookie.load('user'),
       },
     })
       .then((response) => {
@@ -34,8 +36,14 @@ class Expense extends Component {
         this.setState({
           expenses: response.data.expenses,
           balances: response.data.balances,
+          authorized: true,
         });
         // console.log(this.state.balances);
+      })
+      .catch((err) => {
+        this.setState({
+          message: 'Unauthorized!',
+        });        
       });
   }
 
@@ -55,19 +63,22 @@ class Expense extends Component {
     Axios.post('/group/expense/add', data)
     .then ((response) => {
       this.setState({
-        message: "The expense is added",
+        message: "Add expense successfully.",
       });
       this.componentDidMount();
     })
     .catch((err) => {
       this.setState({
-        message: err,
+        message: 'Add expense failed!',
       });
       // console.log(err);
     })
   }
 
   render() {
+    if (!cookie.load('user')) {
+      return <Redirect to="/landing" />;
+    }
     const currency = cookie.load('currency');
     let expenses = this.state.expenses.map((expense) => {
       return(
@@ -101,7 +112,7 @@ class Expense extends Component {
         </h3>
         { this.state.message !== '' && <div className="alert alert-info">{this.state.message}</div>}
 
-        <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#addExpenseModal">
+        <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#addExpenseModal" disabled={!this.state.authorized}>
           Add an expense
         </button>
         <br />

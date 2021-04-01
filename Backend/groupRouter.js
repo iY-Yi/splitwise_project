@@ -11,8 +11,12 @@ const groupRouter = express.Router();
 groupRouter.get('/new', (req, res) => {
   // res.end(JSON.stringify(books));
   (async () => {
-    const users = await User.findAll();
-    res.status(200).end(JSON.stringify(users));
+    try {
+      const users = await User.findAll();
+      res.status(200).end(JSON.stringify(users));
+    } catch (e) {
+      res.status(400).end();
+    }
   })();
 });
 
@@ -60,8 +64,27 @@ groupRouter.post('/new', (req, res) => {
 
 // invite user to group
 groupRouter.post('/invite', (req, res) => {
-  GroupUser.create(req.body)
-    .then(() => res.status(200).end())
+  GroupUser.findOne({
+    where: {
+      groupName: req.body.groupName,
+      userEmail: req.body.requestor,
+      accepted: 1,
+    },
+  })
+    .then((result) => {
+      if (result === null) {
+        throw Error('Unauthorized');
+      }
+      const newInvite = {
+        groupName: req.body.groupName,
+        userEmail: req.body.userEmail,
+        accepted: req.body.accepted,
+      };
+      GroupUser.create(newInvite);
+    })
+    .then(() => {
+      res.status(200).end();
+    })
     .catch((err) => {
       console.log(err);
       res.status(400).send(JSON.stringify(err));
@@ -72,22 +95,26 @@ groupRouter.post('/invite', (req, res) => {
 groupRouter.get('/all', (req, res) => {
   // console.log(req.query);
   (async () => {
-    const invites = await GroupUser.findAll({
-      where: {
-        userEmail: req.query.user,
-        accepted: 0,
-      },
-    });
-    const groups = await GroupUser.findAll({
-      where: {
-        userEmail: req.query.user,
-        accepted: 1,
-      },
-    });
-    res.status(200).send({
-      invites,
-      groups,
-    });
+    try {
+      const invites = await GroupUser.findAll({
+        where: {
+          userEmail: req.query.user,
+          accepted: 0,
+        },
+      });
+      const groups = await GroupUser.findAll({
+        where: {
+          userEmail: req.query.user,
+          accepted: 1,
+        },
+      });
+      res.status(200).send({
+        invites,
+        groups,
+      });
+    } catch (e) {
+      res.status(400).end();
+    }
   })();
 });
 
@@ -149,37 +176,51 @@ groupRouter.put('/accept', (req, res) => {
 groupRouter.get('/expense/:group', (req, res) => {
   const { group } = req.params;
   (async () => {
-    const expenses = await Expense.findAll({
-      attributes: ['date', 'email', 'description', 'amount'],
-      where: {
-        group,
-      },
-      include: [{
-        model: User,
-        attributes: ['name'],
-      }],
-      order: [['date', 'DESC']],
-      raw: true,
-    });
-    expenses.map((exp) => {
-      exp.date = exp.date.toLocaleString('en-US', { timeZone: req.query.timezone });
-      // console.log(exp.formatDate);
-      // console.log(exp);
-    });
-    const balances = await Balance.findAll({
-      where: {
-        clear: 0,
-        group,
-      },
-      include: [{ model: User, as: 'U1' }, { model: User, as: 'U2' }],
-      group: ['user1', 'user2'],
-      attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
-    });
-    // console.log(balances);
-    res.status(200).send({
-      expenses,
-      balances,
-    });
+    try {
+      const groupUser = await GroupUser.findOne({
+        where: {
+          groupName: group,
+          userEmail: req.query.user,
+          accepted: 1,
+        },
+      });
+      if (groupUser === null) {
+        throw Error('Unauthorized');
+      }
+      const expenses = await Expense.findAll({
+        attributes: ['date', 'email', 'description', 'amount'],
+        where: {
+          group,
+        },
+        include: [{
+          model: User,
+          attributes: ['name'],
+        }],
+        order: [['date', 'DESC']],
+        raw: true,
+      });
+      expenses.map((exp) => {
+        exp.date = exp.date.toLocaleString('en-US', { timeZone: req.query.timezone });
+        // console.log(exp.formatDate);
+        // console.log(exp);
+      });
+      const balances = await Balance.findAll({
+        where: {
+          clear: 0,
+          group,
+        },
+        include: [{ model: User, as: 'U1' }, { model: User, as: 'U2' }],
+        group: ['user1', 'user2'],
+        attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
+      });
+      // console.log(balances);
+      res.status(200).send({
+        expenses,
+        balances,
+      });
+    } catch (err) {
+      res.status(400).send(err);
+    }
   })();
 });
 

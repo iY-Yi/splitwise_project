@@ -61,12 +61,16 @@ userRouter.post('/login', (req, res) => {
 userRouter.get('/profile/:email', (req, res) => {
   const { email } = req.params;
   (async () => {
-    const users = await User.findAll({
-      where: { email },
-    });
-    const user = users[0];
-    // console.log('Profile:', JSON.stringify(user));
-    res.status(200).send(user);
+    try {
+      const users = await User.findAll({
+        where: { email },
+      });
+      const user = users[0];
+      // console.log('Profile:', JSON.stringify(user));
+      res.status(200).send(user);
+    } catch (e) {
+      res.status(400).end();
+    }
   })();
 });
 
@@ -96,12 +100,16 @@ userRouter.post('/update', (req, res) => {
   // console.log(req.body);
   const { email } = req.body;
   (async () => {
-    await User.update(req.body, {
-      where: { email },
-    });
-    res.cookie('currency', req.body.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
-    res.cookie('timezone', req.body.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
-    res.status(200).end();
+    try {
+      await User.update(req.body, {
+        where: { email },
+      });
+      res.cookie('currency', req.body.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
+      res.cookie('timezone', req.body.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
+      res.status(200).end();
+    } catch (e) {
+      res.status(400).end();
+    }
   })();
 });
 

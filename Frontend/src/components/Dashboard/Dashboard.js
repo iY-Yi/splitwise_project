@@ -33,6 +33,11 @@ class Dashboard extends Component {
           owed: response.data.owed,
           details: response.data.details,
         });
+      })
+      .catch(() => {
+        this.setState({
+          message: 'Data loading failed!',
+        })
       });
   }
 
@@ -53,6 +58,9 @@ class Dashboard extends Component {
       .then((response) => {
         this.setState({ message: 'Balance is settled.' });
         this.componentDidMount();
+      })
+      .catch((err) => {
+        this.setState({ message: 'Balance settle failed!' });
       });
     }
   }
