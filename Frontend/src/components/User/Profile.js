@@ -106,7 +106,7 @@ class Profile extends Component{
               <label>Name:</label><br/>
               <input className="form-control" type="text" id="name" name="name" value={this.state.user.name} disabled={this.state.disabled} onChange={this.handleChange}/><br/>
               <label>Email:</label><br/>
-              <input className="form-control" type="email" id="email" name="email" value={this.state.user.email} disabled={this.state.disabled} onChange={this.handleChange}/><br/>
+              <input className="form-control" type="email" id="email" name="email" value={this.state.user.email} disabled="true" onChange={this.handleChange}/><br/>
               <label>Phone Number:</label><br/>
               <input className="form-control" type="tel" id="phone" name="phone" value={this.state.user.phone} disabled={this.state.disabled} onChange={this.handleChange}/><br/> 
             </div>
