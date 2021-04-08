@@ -1,31 +1,48 @@
+const mongoose = require('mongoose');
+
+const { Schema } = mongoose;
+
+// Sequelize connection, TO DELETE
 const { Sequelize, DataTypes } = require('sequelize');
-const config = require('./db_Config');
+const config = require('./db_config');
 
 const sequelize = new Sequelize(config.database, config.username, config.password, {
   host: config.host,
   dialect: 'mysql',
   logging: false, // disable logging; defailt: console.log
-  // pool: {
-  //   max: 30, min: 0, idle: 10000,
-  // },
 });
 
-const User = sequelize.define('user', {
-  email: {
-    type: Sequelize.STRING,
-    primaryKey: true,
-  },
-  name: Sequelize.STRING,
-  password: Sequelize.STRING,
-  phone: Sequelize.STRING,
-  avatar: Sequelize.STRING,
-  currency: Sequelize.STRING,
-  timezone: Sequelize.STRING,
-  language: Sequelize.STRING,
+const userSchema = new Schema({
+  email: { type: String, required: true },
+  name: { type: String, required: true },
+  password: { type: String, required: true },
+  phone: { type: String, required: true },
+  avatar: { type: String, required: true },
+  currency: { type: String, required: true },
+  timezone: { type: String, required: true },
+  language: { type: String, required: true },
 }, {
-  tableName: 'user',
-  timestamps: false,
+  versionKey: false,
 });
+
+const User = mongoose.model('user', userSchema);
+
+// const User = sequelize.define('user', {
+//   email: {
+//     type: Sequelize.STRING,
+//     primaryKey: true,
+//   },
+//   name: Sequelize.STRING,
+//   password: Sequelize.STRING,
+//   phone: Sequelize.STRING,
+//   avatar: Sequelize.STRING,
+//   currency: Sequelize.STRING,
+//   timezone: Sequelize.STRING,
+//   language: Sequelize.STRING,
+// }, {
+//   tableName: 'user',
+//   timestamps: false,
+// });
 
 const Group = sequelize.define('group', {
   name: {
@@ -49,10 +66,10 @@ const GroupUser = sequelize.define('group_user', {
   },
   userEmail: {
     type: Sequelize.STRING,
-    references: {
-      model: User,
-      key: 'email',
-    },
+    // references: {
+    //   model: User,
+    //   key: 'email',
+    // },
   },
   accepted: {
     type: Sequelize.BOOLEAN,
@@ -62,8 +79,8 @@ const GroupUser = sequelize.define('group_user', {
   timestamps: false,
 });
 
-User.belongsToMany(Group, { through: GroupUser });
-Group.belongsToMany(User, { through: GroupUser });
+// User.belongsToMany(Group, { through: GroupUser });
+// Group.belongsToMany(User, { through: GroupUser });
 
 const Expense = sequelize.define('expense', {
   id: {
@@ -85,7 +102,7 @@ const Expense = sequelize.define('expense', {
 });
 
 // User.hasMany(Expense);
-Expense.belongsTo(User, { foreignKey: 'email' });
+// Expense.belongsTo(User, { foreignKey: 'email' });
 
 // balance calculation
 const Balance = sequelize.define('balance', {
@@ -109,15 +126,15 @@ const Balance = sequelize.define('balance', {
   timestamps: false,
 });
 
-Balance.belongsTo(User, {
-  foreignKey: 'user1',
-  as: 'U1',
-});
+// Balance.belongsTo(User, {
+//   foreignKey: 'user1',
+//   as: 'U1',
+// });
 
-Balance.belongsTo(User, {
-  foreignKey: 'user2',
-  as: 'U2',
-});
+// Balance.belongsTo(User, {
+//   foreignKey: 'user2',
+//   as: 'U2',
+// });
 
 module.exports = {
   sequelize, User, Group, GroupUser, Balance, Expense,

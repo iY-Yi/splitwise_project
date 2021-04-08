@@ -14,11 +14,6 @@ app.set('view engine', 'ejs');
 // app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(cors());
 
-const { Sequelize, Op } = require('sequelize');
-const {
-  Expense, User, GroupUser, Balance,
-} = require('./db_models');
-
 // use express session to maintain session data
 app.use(session({
   secret: 'cmpe273_splitwise',
@@ -43,6 +38,30 @@ app.use((req, res, next) => {
 // app.get('/', (req, res) => {
 //   res.redirect('/Navbar');
 // });
+
+// const { Sequelize, Op } = require('sequelize');
+
+const mongoose = require('mongoose');
+const { mongoDB } = require('./db_config');
+const {
+  Expense, User, GroupUser, Balance,
+} = require('./db_models');
+
+const options = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  poolSize: 500,
+  bufferMaxEntries: 0,
+};
+
+mongoose.connect(mongoDB, options, (err, res) => {
+  if (err) {
+    console.log(err);
+    console.log('MongoDB Connection Failed');
+  } else {
+    console.log('MongoDB Connected');
+  }
+});
 
 const userRoutes = require('./userRouter');
 const groupRoutes = require('./groupRouter');
