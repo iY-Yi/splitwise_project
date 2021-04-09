@@ -14,13 +14,13 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
 
 const userSchema = new Schema({
   email: { type: String, required: true },
-  name: { type: String, required: true },
+  name: { type: String, required: false },
   password: { type: String, required: true },
-  phone: { type: String, required: true },
-  avatar: { type: String, required: true },
-  currency: { type: String, required: true },
-  timezone: { type: String, required: true },
-  language: { type: String, required: true },
+  phone: { type: String, required: false },
+  avatar: { type: String, required: false },
+  currency: { type: String, required: false },
+  timezone: { type: String, required: false },
+  language: { type: String, required: false },
 }, {
   versionKey: false,
 });

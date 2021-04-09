@@ -18,17 +18,32 @@ userRouter.post('/signup', (req, res) => {
     try {
       const salt = await bcrypt.genSalt(saltRound);
       req.body.password = await bcrypt.hash(req.body.password, salt);
-      const newUser = await User.create(req.body);
-      // console.log(JSON.stringify(newUser));
-      res.cookie('user', newUser.email, { maxAge: 86400000, httpOnly: false, path: '/' });
-      res.cookie('currency', newUser.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
-      res.cookie('timezone', newUser.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
-      res.status(200).end(JSON.stringify(newUser));
     } catch (err) {
-      // console.log(err);
+      console.log(err);
       res.status(400).end(JSON.stringify(err));
     }
   })();
+  const newUser = new User(req.body);
+  User.findOne({ email: req.body.email }, (error, existUser) => {
+    if (error) {
+      res.status(500).end();
+    }
+    if (existUser) {
+      res.status(400).end();
+    } else {
+      newUser.save((error, data) => {
+        if (error) {
+          console.log(error);
+          res.status(500).end();
+        } else {
+          res.cookie('user', newUser.email, { maxAge: 86400000, httpOnly: false, path: '/' });
+          res.cookie('currency', newUser.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
+          res.cookie('timezone', newUser.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
+          res.status(200).end(JSON.stringify(newUser));
+        }
+      });
+    }
+  });
 });
 
 userRouter.post('/login', (req, res) => {

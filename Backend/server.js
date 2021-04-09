@@ -50,7 +50,7 @@ const {
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  poolSize: 500,
+  poolSize: 50,
   bufferMaxEntries: 0,
 };
 
