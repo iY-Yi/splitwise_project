@@ -33,17 +33,6 @@ class Signup extends Component{
       this.setState({
         submitted: true,
       });
-
-      // Axios.post("/user/signup", user)
-      // .then((response)=> {
-      //     console.log("Successful: ", response.status);
-      //     this.setState({ submitted: true});
-      // })
-      // .catch((err) => {
-      //     console.log("Error", err);
-      //     this.setState({ submitted : false});
-      // });
-    
   }
 
   render(){
@@ -57,7 +46,7 @@ class Signup extends Component{
       return <Redirect to= "/dashboard" />;
     }
     else if (this.props.user && this.props.user.errors) {
-      message = 'User sign up failed!';
+      message = this.props.user.errors.body;
     }
       return(
           <div>
