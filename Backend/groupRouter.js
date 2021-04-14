@@ -1,8 +1,9 @@
 const express = require('express');
 const multer = require('multer');
+const mongoose = require('mongoose');
 const { Sequelize, Op } = require('sequelize');
 const {
-  User, Group, GroupUser, Expense, Balance,
+  User, Group, Invite, Expense, Balance,
 } = require('./db_models');
 
 const groupRouter = express.Router();
@@ -12,7 +13,8 @@ groupRouter.get('/new', (req, res) => {
   // res.end(JSON.stringify(books));
   (async () => {
     try {
-      const users = await User.findAll();
+      const users = await User.find({});
+      // console.log(users);
       res.status(200).end(JSON.stringify(users));
     } catch (e) {
       res.status(400).end();
@@ -45,72 +47,85 @@ groupRouter.post('/upload', (req, res) => {
 // create new group
 groupRouter.post('/new', (req, res) => {
   req.body.count = 1;
-  // console.log(req.body);
+  console.log(req.body);
+  // let groupId;
 
-  Group.create(req.body)
-    .then(() => {
-      GroupUser.create({
-        groupName: req.body.name,
-        userEmail: req.body.creator,
-        accepted: 1,
-      });
-    })
-    .then(() => res.status(200).end())
-    .catch((err) => {
-      // console.log(err);
-      res.status(400).send(JSON.stringify(err));
-    });
-});
-
-// invite user to group
-groupRouter.post('/invite', (req, res) => {
-  GroupUser.findOne({
-    where: {
-      groupName: req.body.groupName,
-      userEmail: req.body.requestor,
-      accepted: 1,
-    },
-  })
-    .then((result) => {
-      if (result === null) {
-        throw Error('Unauthorized');
+  Group.findOne({ name: req.body.name })
+    .then((existGroup) => {
+      if (existGroup) {
+        res.status(400).send({
+          errors: {
+            body: 'GROUP_EXISTS',
+          },
+        });
       }
-      const newInvite = {
-        groupName: req.body.groupName,
-        userEmail: req.body.userEmail,
-        accepted: req.body.accepted,
-      };
-      GroupUser.create(newInvite);
+      const newGroup = new Group({
+        name: req.body.name,
+        image: req.body.image,
+        users: [mongoose.Types.ObjectId(req.body.creator)],
+      });
+      return newGroup.save();
+    })
+    .then((group) => {
+      console.log(group);
+      // groupId = group._id;
+      const creatorId = mongoose.Types.ObjectId(req.body.creator);
+      return User.update({ _id: creatorId },
+        { $push: { groups: group._id } });
     })
     .then(() => {
       res.status(200).end();
     })
     .catch((err) => {
       console.log(err);
+      res.status(500).send(JSON.stringify(err));
+    });
+});
+
+// invite user to group
+groupRouter.post('/invite', (req, res) => {
+  console.log(req.body);
+  Group.findOne({ name: req.body.groupName })
+    .then((group) => {
+      if (group && group.users.indexOf(req.body.requestor) >= 0) {
+        console.log('Authorized');
+        return group._id;
+      }
+      res.status(400).send({
+        errors: {
+          body: 'NOT_AUTHORIZED',
+        },
+      });
+    })
+    .then((groupId) => {
+      const newInvite = new Invite({
+        group: groupId,
+        user: req.body.user,
+      });
+      return newInvite.save();
+    })
+    .then(() => res.status(200).end())
+    .catch((err) => {
       res.status(400).send(JSON.stringify(err));
     });
 });
 
 // display all groups
 groupRouter.get('/all', (req, res) => {
-  // console.log(req.query);
+  const userId = mongoose.Types.ObjectId(req.query.user);
   (async () => {
     try {
-      const invites = await GroupUser.findAll({
-        where: {
-          userEmail: req.query.user,
-          accepted: 0,
-        },
-      });
-      const groups = await GroupUser.findAll({
-        where: {
-          userEmail: req.query.user,
-          accepted: 1,
-        },
-      });
+      const invites = await Invite.find({
+        user: userId,
+      })
+        .populate('group');
+      console.log(invites[0].group.name);
+      const user = await User.findById(userId).populate('group');
+      console.log(user);
+      console.log(user.groups);
       res.status(200).send({
         invites,
-        groups,
+        user,
       });
     } catch (e) {
       res.status(400).end();
@@ -157,20 +172,32 @@ groupRouter.post('/leave', (req, res) => {
 
 // Accept group invite
 groupRouter.put('/accept', (req, res) => {
-  // console.log(req.body);
-  (async () => {
-    try {
-      await GroupUser.update({ accepted: 1 }, {
-        where: {
-          groupName: req.body.groupName,
-          userEmail: req.body.userEmail,
-        },
-      });
+  const groupId = req.body.group;
+  const userId = req.body.user;
+
+  Group.update({ _id: groupId },
+    { $addToSet: { users: userId } })
+    .then(() => User.update({ _id: userId },
+      { $addToSet: { groups: groupId } }))
+    .then(() => {
       res.status(200).end();
-    } catch (err) {
+    })
+    .catch((err) => {
       res.status(400).send(err);
-    }
-  })();
+    });
+  // (async () => {
+  //   try {
+  //     await GroupUser.update({ accepted: 1 }, {
+  //       where: {
+  //         groupName: req.body.groupName,
+  //         userEmail: req.body.userEmail,
+  //       },
+  //     });
+  //     res.status(200).end();
+  //   } catch (err) {
+  //     res.status(400).send(err);
+  //   }
+  // })();
 });
 
 groupRouter.get('/expense/:group', (req, res) => {

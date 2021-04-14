@@ -13,74 +13,40 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
 });
 
 const userSchema = new Schema({
-  email: { type: String, required: true },
-  name: { type: String, required: false },
+  email: { type: String, required: true, unique: true },
+  name: { type: String },
   password: { type: String, required: true },
-  phone: { type: String, required: false },
-  avatar: { type: String, required: false },
-  currency: { type: String, required: false },
-  timezone: { type: String, required: false },
-  language: { type: String, required: false },
+  phone: { type: String },
+  avatar: { type: String },
+  currency: { type: String },
+  timezone: { type: String },
+  language: { type: String },
+  groups: [{ type: Schema.ObjectId, ref: 'group' }],
 }, {
   versionKey: false,
 });
 
 const User = mongoose.model('user', userSchema);
 
-// const User = sequelize.define('user', {
-//   email: {
-//     type: Sequelize.STRING,
-//     primaryKey: true,
-//   },
-//   name: Sequelize.STRING,
-//   password: Sequelize.STRING,
-//   phone: Sequelize.STRING,
-//   avatar: Sequelize.STRING,
-//   currency: Sequelize.STRING,
-//   timezone: Sequelize.STRING,
-//   language: Sequelize.STRING,
-// }, {
-//   tableName: 'user',
-//   timestamps: false,
-// });
-
-const Group = sequelize.define('group', {
-  name: {
-    type: Sequelize.STRING,
-    primaryKey: true,
-  },
-  image: Sequelize.STRING,
+const groupSchema = new Schema({
+  name: { type: String, required: true, unique: true },
+  image: { type: String },
+  users: [{ type: Schema.ObjectId, ref: 'user' }],
 }, {
-  tableName: 'group',
-  timestamps: false,
+  versionKey: false,
 });
 
-// DataTypes.BOOLEAN
-const GroupUser = sequelize.define('group_user', {
-  groupName: {
-    type: Sequelize.STRING,
-    references: {
-      model: Group,
-      key: 'name',
-    },
-  },
-  userEmail: {
-    type: Sequelize.STRING,
-    // references: {
-    //   model: User,
-    //   key: 'email',
-    // },
-  },
-  accepted: {
-    type: Sequelize.BOOLEAN,
-  },
+const Group = mongoose.model('group', groupSchema);
+
+const inviteSchema = new Schema({
+  group: { type: Schema.ObjectId, ref: 'group', required: true },
+  user: { type: Schema.ObjectId, ref: 'user', required: true },
+  // accepted: { type: Boolean },
 }, {
-  tableName: 'group_user',
-  timestamps: false,
+  versionKey: false,
 });
 
-// User.belongsToMany(Group, { through: GroupUser });
-// Group.belongsToMany(User, { through: GroupUser });
+const Invite = mongoose.model('invite', inviteSchema);
 
 const Expense = sequelize.define('expense', {
   id: {
@@ -137,5 +103,5 @@ const Balance = sequelize.define('balance', {
 // });
 
 module.exports = {
-  sequelize, User, Group, GroupUser, Balance, Expense,
+  sequelize, User, Group, Invite, Balance, Expense,
 };

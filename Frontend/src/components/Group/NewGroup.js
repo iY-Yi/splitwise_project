@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
 
+
 class NewGroup extends Component{
   state = {
     name: '',
@@ -51,9 +52,9 @@ class NewGroup extends Component{
       inviteMsg : ''});    
     const inviteData= {
       groupName: this.state.name,
-      userEmail: e.target.value,
+      user: e.target.value,
       accepted: 0,
-      requestor: cookie.load('user'),
+      requestor: cookie.load('id'),
     }
     Axios.post('/group/invite', inviteData)
     .then((response)=>{
@@ -83,7 +84,7 @@ class NewGroup extends Component{
       name: this.state.name,
       image: this.state.image,
       fileSelected: this.state.fileSelected,
-      creator: this.state.creator,
+      creator: cookie.load('id'),
       // members: this.state.members,     
     }
     try {
@@ -113,7 +114,7 @@ class NewGroup extends Component{
           <tr>
             <td>{user.name}</td>
             <td>                                
-              <button type="button" className="btn btn-secondary btn-sm" value={user.email} onClick={(e)=>this.inviteUser(e)}>Invite</button>                
+              <button type="button" className="btn btn-secondary btn-sm" value={user._id} onClick={(e)=>this.inviteUser(e)}>Invite</button>                
             </td>
           </tr>
       )

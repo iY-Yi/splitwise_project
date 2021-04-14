@@ -8,7 +8,7 @@ class AllGroup extends Component{
     invites: [],
     groups: [],
     search: '',
-    user: cookie.load('user'),
+    user: cookie.load('id'),
     message: '',
   };
 
@@ -16,15 +16,15 @@ class AllGroup extends Component{
   componentDidMount(){
     Axios.get('/group/all', {
       params: {
-        user: cookie.load('user'),
+        user: cookie.load('id'),
       }
     })
     .then((response) => {
       //update the state with the response data
-      // console.log(response);
+      console.log(response.data);
       this.setState({
         invites : response.data.invites,
-        groups : response.data.groups,
+        groups : response.data.user.groups,
       });
     })
     .catch((err) => {
@@ -38,8 +38,8 @@ class AllGroup extends Component{
 
   acceptGroup = (e) => {
     const data = {
-      groupName: e.target.value,
-      userEmail: this.state.user,
+      group: e.target.value,
+      user: this.state.user,
     };
     Axios.put('/group/accept', data)
     .then(()=> {
@@ -90,9 +90,9 @@ class AllGroup extends Component{
     let invites = this.state.invites.map((invite) => {
       return(
           <tr>
-            <td>{invite.groupName}</td>
+            <td>{invite.group.name}</td>
             <td>                                
-              <button type="button" class="btn btn-secondary btn-sm" value={invite.groupName} onClick={(e)=>this.acceptGroup(e)}>Accept</button>                
+              <button type="button" class="btn btn-secondary btn-sm" value={invite.group._id} onClick={(e)=>this.acceptGroup(e)}>Accept</button>                
             </td>
           </tr>
       )      

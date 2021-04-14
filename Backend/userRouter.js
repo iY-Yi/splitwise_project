@@ -33,10 +33,12 @@ userRouter.post('/signup', (req, res) => {
           req.body.password = await bcrypt.hash(req.body.password, salt);
           const newUser = new User(req.body);
           newUser.save()
-            .then(() => {
-              res.cookie('user', newUser.email, { maxAge: 86400000, httpOnly: false, path: '/' });
-              res.cookie('currency', newUser.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
-              res.cookie('timezone', newUser.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
+            .then((savedUser) => {
+              // console.log(savedUser);
+              res.cookie('id', savedUser._id.toString(), { maxAge: 86400000, httpOnly: false, path: '/' });
+              res.cookie('user', savedUser.email, { maxAge: 86400000, httpOnly: false, path: '/' });
+              res.cookie('currency', savedUser.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
+              res.cookie('timezone', savedUser.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
               res.status(200).end(JSON.stringify(newUser));
             });
         } catch (err) {
@@ -56,6 +58,7 @@ userRouter.post('/login', (req, res) => {
         bcrypt.compare(req.body.password, user.password, (err, match) => {
           // console.log(match);
           if (match) {
+            res.cookie('id', user._id.toString(), { maxAge: 86400000, httpOnly: false, path: '/' });
             res.cookie('user', user.email, { maxAge: 86400000, httpOnly: false, path: '/' });
             res.cookie('currency', user.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
             res.cookie('timezone', user.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
