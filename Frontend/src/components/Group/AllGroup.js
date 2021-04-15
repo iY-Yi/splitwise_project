@@ -23,7 +23,7 @@ class AllGroup extends Component{
       //update the state with the response data
       console.log(response.data);
       this.setState({
-        invites : response.data.invites,
+        invites : response.data.user.invites,
         groups : response.data.user.groups,
       });
     })
@@ -72,16 +72,16 @@ class AllGroup extends Component{
       return <Redirect to="/landing" />;
     }
     let allGroup = this.state.groups.filter((group)=> {
-      if (group.groupName.toLowerCase().includes(this.state.search.toLowerCase())) {
+      if (group.name.toLowerCase().includes(this.state.search.toLowerCase())) {
         return group;
       }
     })
     .map((group) => {
       return(
         <tr>
-          <td><a href={"/group/expense/"+ group.groupName}>{group.groupName}</a></td>
+          <td><a href={"/group/expense/"+ group._id}>{group.name}</a></td>
           <td>                                
-            <button type="button" class="btn btn-secondary btn-sm" value={group.groupName} onClick={(e)=>this.leaveGroup(e)}>Leave</button>                
+            <button type="button" class="btn btn-secondary btn-sm" value={group._id} onClick={(e)=>this.leaveGroup(e)}>Leave</button>                
           </td>
         </tr>
       )      
@@ -90,9 +90,9 @@ class AllGroup extends Component{
     let invites = this.state.invites.map((invite) => {
       return(
           <tr>
-            <td>{invite.group.name}</td>
+            <td>{invite.name}</td>
             <td>                                
-              <button type="button" class="btn btn-secondary btn-sm" value={invite.group._id} onClick={(e)=>this.acceptGroup(e)}>Accept</button>                
+              <button type="button" class="btn btn-secondary btn-sm" value={invite._id} onClick={(e)=>this.acceptGroup(e)}>Accept</button>                
             </td>
           </tr>
       )      

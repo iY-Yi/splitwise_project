@@ -22,10 +22,10 @@ const userSchema = new Schema({
   timezone: { type: String },
   language: { type: String },
   groups: [{ type: Schema.ObjectId, ref: 'group' }],
+  invites: [{ type: Schema.ObjectId, ref: 'group' }],
 }, {
   versionKey: false,
 });
-
 const User = mongoose.model('user', userSchema);
 
 const groupSchema = new Schema({
@@ -35,62 +35,53 @@ const groupSchema = new Schema({
 }, {
   versionKey: false,
 });
-
 const Group = mongoose.model('group', groupSchema);
 
-const inviteSchema = new Schema({
-  group: { type: Schema.ObjectId, ref: 'group', required: true },
-  user: { type: Schema.ObjectId, ref: 'user', required: true },
-  // accepted: { type: Boolean },
+const expenseSchema = new Schema({
+  group: { type: Schema.ObjectId, ref: 'group' },
+  payor: { type: Schema.ObjectId, ref: 'user' },
+  description: { type: String },
+  date: { type: Date, default: Date.now },
+  amount: { type: Number },
 }, {
   versionKey: false,
 });
+const Expense = mongoose.model('expense', expenseSchema);
 
-const Invite = mongoose.model('invite', inviteSchema);
-
-const Expense = sequelize.define('expense', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    defaultValue: Sequelize.UUIDV4,
-  },
-  group: DataTypes.STRING,
-  date: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
-  email: DataTypes.STRING,
-  description: DataTypes.STRING,
-  amount: DataTypes.DECIMAL,
+const balanceSchema = new Schema({
+  group: { type: Schema.ObjectId, ref: 'group' },
+  description: { type: String },
+  expense: { type: Schema.ObjectId, ref: 'expense' },
+  date: { type: Date, default: Date.now },
+  owe: { type: Number },
+  user1: { type: Schema.ObjectId, ref: 'user' },
+  user2: { type: Schema.ObjectId, ref: 'user' },
+  clear: { type: Boolean },
 }, {
-  tableName: 'expense',
-  timestamps: false,
+  versionKey: false,
 });
+const Balance = mongoose.model('balance', balanceSchema);
 
-// User.hasMany(Expense);
-// Expense.belongsTo(User, { foreignKey: 'email' });
-
-// balance calculation
-const Balance = sequelize.define('balance', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    defaultValue: Sequelize.UUIDV4,
-  },
-  group: DataTypes.STRING,
-  date: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
-  description: DataTypes.STRING,
-  user1: DataTypes.STRING,
-  user2: DataTypes.STRING,
-  owe: DataTypes.DECIMAL,
-  clear: DataTypes.BOOLEAN,
-}, {
-  tableName: 'balance',
-  timestamps: false,
-});
+// const Balance = sequelize.define('balance', {
+//   id: {
+//     type: DataTypes.UUID,
+//     primaryKey: true,
+//     defaultValue: Sequelize.UUIDV4,
+//   },
+//   group: DataTypes.STRING,
+//   date: {
+//     type: DataTypes.DATE,
+//     defaultValue: Sequelize.NOW,
+//   },
+//   description: DataTypes.STRING,
+//   user1: DataTypes.STRING,
+//   user2: DataTypes.STRING,
+//   owe: DataTypes.DECIMAL,
+//   clear: DataTypes.BOOLEAN,
+// }, {
+//   tableName: 'balance',
+//   timestamps: false,
+// });
 
 // Balance.belongsTo(User, {
 //   foreignKey: 'user1',
@@ -103,5 +94,5 @@ const Balance = sequelize.define('balance', {
 // });
 
 module.exports = {
-  sequelize, User, Group, Invite, Balance, Expense,
+  sequelize, User, Group, Balance, Expense,
 };

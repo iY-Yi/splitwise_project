@@ -74,53 +74,109 @@ app.use('/group', groupRoutes);
 app.get('/dashboard', (req, res) => {
   (async () => {
     try {
-      const balances = await Balance.findAll({
-        where: {
-          [Op.and]: [{ clear: 0 }, { [Op.or]: [{ user1: req.query.user }, { user2: req.query.user }] }],
+      const { user } = req.query;
+      // console.log(user);
+      const balances = await Balance.aggregate([
+        { $match: { $and: [{ clear: false }, { $or: [{ user1: mongoose.Types.ObjectId(user) }, { user2: mongoose.Types.ObjectId(user) }] }] } },
+        {
+          $group: {
+            _id: { user1: '$user1', user2: '$user2' },
+            total: { $sum: '$owe' },
+          },
         },
-        include: [{ model: User, as: 'U1', attributes: ['name'] }, { model: User, as: 'U2', attributes: ['name'] }],
-        group: ['user1', 'user2'],
-        attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
-        raw: true,
-      });
+        {
+          $project: {
+            user1: '$_id.user1',
+            user2: '$_id.user2',
+            total: 1,
+            _id: 0,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user1',
+            foreignField: '_id',
+            as: 'U1',
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user2',
+            foreignField: '_id',
+            as: 'U2',
+          },
+        },
+      ]);
+      // console.log(balances);
       // split data to owes and owed
       const owes = [];
       const owed = [];
       balances.map((data) => {
+        let record;
         if ((data.user1 === req.query.user && data.total > 0) || (data.user2 === req.query.user && data.total < 0)) {
           if (data.total < 0) {
-            data.balance = -data.total;
-            data.email = data.user1;
-            data.name = data['U1.name'];
+            record = { balance: -data.total, userId: data.user1, name: data.U1[0].name };
           } else {
-            data.balance = data.total;
-            data.email = data.user2;
-            data.name = data['U2.name'];
+            record = { balance: data.total, userId: data.user2, name: data.U2[0].name };
           }
-          owes.push(data);
+          owes.push(record);
         } else {
           if (data.total < 0) {
-            data.balance = -data.total;
-            data.email = data.user2;
-            data.name = data['U2.name'];
+            record = { balance: -data.total, userId: data.user2, name: data.U2[0].name };
           } else {
-            data.balance = data.total;
-            data.email = data.user1;
-            data.name = data['U1.name'];
+            record = { balance: data.total, userId: data.user1, name: data.U1[0].name };
           }
-          owed.push(data);
+          owed.push(record);
         }
       });
+      // console.log(owes);
+      // console.log(owed);
       // balance details
-      const details = await Balance.findAll({
-        where: {
-          [Op.and]: [{ clear: 0 }, { [Op.or]: [{ user1: req.query.user }, { user2: req.query.user }] }],
+      const details = await Balance.aggregate([
+        { $match: { $and: [{ clear: false }, { $or: [{ user1: mongoose.Types.ObjectId(user) }, { user2: mongoose.Types.ObjectId(user) }] }] } },
+        {
+          $group: {
+            _id: { user1: '$user1', user2: '$user2', group: '$group' },
+            total: { $sum: '$owe' },
+          },
         },
-        include: [{ model: User, as: 'U1', attributes: ['name'] }, { model: User, as: 'U2', attributes: ['name'] }],
-        group: ['user1', 'user2', 'group'],
-        attributes: ['user1', 'user2', 'group', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
-        raw: true,
-      });
+        {
+          $project: {
+            user1: '$_id.user1',
+            user2: '$_id.user2',
+            group: '$_id.group',
+            total: 1,
+            _id: 0,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user1',
+            foreignField: '_id',
+            as: 'U1',
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user2',
+            foreignField: '_id',
+            as: 'U2',
+          },
+        },
+        {
+          $lookup: {
+            from: 'groups',
+            localField: 'group',
+            foreignField: '_id',
+            as: 'groupDetails',
+          },
+        },
+      ]);
+      // console.log(details);
       res.status(200).send({
         owes, owed, details,
       });
@@ -132,16 +188,13 @@ app.get('/dashboard', (req, res) => {
 
 // settle up transaction between two users
 app.post('/settle', (req, res) => {
-  // console.log(req.body);
+  console.log(req.body);
+  const { user, user2 } = req.body;
   // update clear flag to 1
   (async () => {
     try {
-      await Balance.update({ clear: 1 }, {
-        where: {
-          [Op.or]: [{ [Op.and]: [{ user1: req.body.user }, { user2: req.body.user2 }] },
-            { [Op.and]: [{ user1: req.body.user2 }, { user2: req.body.user }] }],
-        },
-      });
+      await Balance.updateMany({ user1: mongoose.Types.ObjectId(user), user2: mongoose.Types.ObjectId(user2) }, { $set: { clear: true } });
+      await Balance.updateMany({ user1: mongoose.Types.ObjectId(user2), user2: mongoose.Types.ObjectId(user) }, { $set: { clear: true } });
       res.status(200).end();
     } catch (e) {
       res.status(400).end();
@@ -153,27 +206,20 @@ app.post('/settle', (req, res) => {
 app.get('/activity', (req, res) => {
   (async () => {
     try {
-      const groups = await GroupUser.findAll({
-        attributes: ['groupName'],
-        where: {
-          userEmail: req.query.user,
-          accepted: 1,
-        },
-        raw: true,
-      });
-      const groupNames = groups.map((group) => group.groupName);
+      let groups = await User.findById(req.query.user, 'groups').populate('groups', 'name');
+      groups = groups.groups;
+      const groupNames = groups.map((group) => group.name);
+      const groupIds = groups.map((group) => group._id);
       // console.log(groupNames);
-      const activities = await Expense.findAll({
-        where: {
-          group: groupNames,
-        },
-        include: [{ model: User, attributes: ['name'] }],
-        order: [['date', 'DESC']],
-        raw: true,
-      });
-      activities.map((act) => {
-        act.formatDate = act.date.toLocaleString('en-US', { timeZone: req.query.timezone });
-      });
+
+      const activities = await Expense.find({ group: { $in: groupIds } })
+        .populate('group', 'name').populate('payor', 'name').sort('-date');
+      // console.log(activities);
+
+      // activities.map((act) => {
+      //   console.log(act.date.toLocaleString('en-US', { timeZone: req.query.timezone }));
+      //   // act.date = act.date.toLocaleString('en-US', { timeZone: req.query.timezone });
+      // });
       // console.log(activities);
       res.status(200).send({
         activities,

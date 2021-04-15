@@ -9,13 +9,13 @@ class Expense extends Component {
     super(props);
     this.state = {
       group: this.props.match.params.group,
-      email: cookie.load('user'),
+      payor: cookie.load('id'),
       expenses: [],
       balances: [],
       description: '',
       amount: -1,
       message: '',
-      authorized: false,
+      authorized: false,  // TO DO: change to false
     };
   }
 
@@ -27,7 +27,7 @@ class Expense extends Component {
     Axios.get(`/group/expense/${group}`, {
       params: {
         timezone: timezone,
-        user: cookie.load('user'),
+        user: cookie.load('id'),
       },
     })
       .then((response) => {
@@ -58,7 +58,7 @@ class Expense extends Component {
       group: this.state.group,
       description: this.state.description,
       amount: this.state.amount,
-      email: this.state.email,
+      payor: this.state.payor,
     }
     Axios.post('/group/expense/add', data)
     .then ((response) => {
@@ -85,7 +85,7 @@ class Expense extends Component {
           <tr>
             <td>{expense.date}</td>
             <td>{expense.description}</td>
-            <td>{expense['user.name']} paid</td>
+            <td>{expense.payor.name} paid</td>
             <td>{numeral(expense.amount).format('0,0.00')} {currency}</td>
           </tr>
       )      
@@ -94,12 +94,12 @@ class Expense extends Component {
     let balances = this.state.balances.map((balance) => {
       if (balance.total > 0){
         return (
-          <li class="list-group-item">{balance.U1.name} owes {balance.U2.name} {numeral(balance.total).format('0,0.00')} {currency}</li>
+          <li class="list-group-item">{balance.U1[0].name} owes {balance.U2[0].name} {numeral(balance.total).format('0,0.00')} {currency}</li>
         )
       }
       else if (balance.total < 0) {
         return (
-          <li class="list-group-item">{balance.U2.name} owes {balance.U1.name} {numeral(-balance.total).format('0,0.00')} {currency}</li>
+          <li class="list-group-item">{balance.U2[0].name} owes {balance.U1[0].name} {numeral(-balance.total).format('0,0.00')} {currency}</li>
         )        
       }
     });

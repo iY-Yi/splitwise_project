@@ -97,13 +97,8 @@ groupRouter.post('/invite', (req, res) => {
         },
       });
     })
-    .then((groupId) => {
-      const newInvite = new Invite({
-        group: groupId,
-        user: req.body.user,
-      });
-      return newInvite.save();
-    })
+    .then((groupId) => User.update({ _id: req.body.user },
+      { $addToSet: { invites: groupId } }))
     .then(() => res.status(200).end())
     .catch((err) => {
       res.status(400).send(JSON.stringify(err));
@@ -115,19 +110,12 @@ groupRouter.get('/all', (req, res) => {
   const userId = mongoose.Types.ObjectId(req.query.user);
   (async () => {
     try {
-      const invites = await Invite.find({
-        user: userId,
-      })
-        .populate('group');
-      console.log(invites[0].group.name);
-      const user = await User.findById(userId).populate('group');
-      console.log(user);
-      console.log(user.groups);
-      res.status(200).send({
-        invites,
-        user,
-      });
+      const user = await User.findById(userId)
+        .populate('invites')
+        .populate('groups');
+      res.status(200).send({ user });
     } catch (e) {
+      console.log(e);
       res.status(400).end();
     }
   })();
@@ -178,68 +166,79 @@ groupRouter.put('/accept', (req, res) => {
   Group.update({ _id: groupId },
     { $addToSet: { users: userId } })
     .then(() => User.update({ _id: userId },
-      { $addToSet: { groups: groupId } }))
+      { $addToSet: { groups: groupId }, $pull: { invites: groupId } }))
     .then(() => {
       res.status(200).end();
     })
     .catch((err) => {
       res.status(400).send(err);
     });
-  // (async () => {
-  //   try {
-  //     await GroupUser.update({ accepted: 1 }, {
-  //       where: {
-  //         groupName: req.body.groupName,
-  //         userEmail: req.body.userEmail,
-  //       },
-  //     });
-  //     res.status(200).end();
-  //   } catch (err) {
-  //     res.status(400).send(err);
-  //   }
-  // })();
 });
 
 groupRouter.get('/expense/:group', (req, res) => {
   const { group } = req.params;
   (async () => {
     try {
-      const groupUser = await GroupUser.findOne({
-        where: {
-          groupName: group,
-          userEmail: req.query.user,
-          accepted: 1,
-        },
-      });
-      if (groupUser === null) {
+      const existGroup = await Group.findById(group);
+      if (existGroup === null || existGroup.users.indexOf(req.query.user) < 0) {
         throw Error('Unauthorized');
       }
-      const expenses = await Expense.findAll({
-        attributes: ['date', 'email', 'description', 'amount'],
-        where: {
-          group,
-        },
-        include: [{
-          model: User,
-          attributes: ['name'],
-        }],
-        order: [['date', 'DESC']],
-        raw: true,
-      });
+      const expenses = await Expense.find({ group })
+        .populate('payor', 'name')
+        .sort('-date');
+
       expenses.map((exp) => {
         exp.date = exp.date.toLocaleString('en-US', { timeZone: req.query.timezone });
         // console.log(exp.formatDate);
         // console.log(exp);
       });
-      const balances = await Balance.findAll({
-        where: {
-          clear: 0,
-          group,
+      // console.log(expenses);
+      // console.log(expenses[0].payor.name);
+      const balances = await Balance.aggregate([
+        { $match: { $and: [{ clear: false }, { group: mongoose.Types.ObjectId(group) }] } },
+        {
+          $group: {
+            _id: { user1: '$user1', user2: '$user2' },
+            total: { $sum: '$owe' },
+          },
         },
-        include: [{ model: User, as: 'U1' }, { model: User, as: 'U2' }],
-        group: ['user1', 'user2'],
-        attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
-      });
+        {
+          $project: {
+            user1: '$_id.user1',
+            user2: '$_id.user2',
+            total: 1,
+            _id: 0,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user1',
+            foreignField: '_id',
+            as: 'U1',
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user2',
+            foreignField: '_id',
+            as: 'U2',
+          },
+        },
+      ]);
+      // console.log(balances);
+      // console.log(balances[0].U1);
+      // console.log(balances[0].U1[0].name);
+      // const balances = await Balance.findAll({
+      //   where: {
+      //     clear: 0,
+      //     group,
+      //   },
+      //   include: [{ model: User, as: 'U1' }, { model: User, as: 'U2' }],
+      //   group: ['user1', 'user2'],
+      //   attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
+      // });
       // console.log(balances);
       res.status(200).send({
         expenses,
@@ -257,34 +256,34 @@ groupRouter.post('/expense/add', (req, res) => {
   (async () => {
     try {
       // add to expense table
-      await Expense.create(req.body);
+      const expense = await Expense.create(req.body);
       // add to balance table
-      const { count, rows } = await GroupUser.findAndCountAll({
-        attributes: ['userEmail'],
-        where: {
-          groupName: req.body.group,
-          accepted: 1,
-        },
-      });
-      const splitAmount = req.body.amount / count;
-      rows.filter((row) => row.userEmail !== req.body.email).map(async (row) => {
+      const group = await Group.findById(req.body.group)
+        .populate('users', 'email');
+      const members = group.users;
+      const splitAmount = req.body.amount / members.length;
+      const payorEmail = await User.findById(req.body.payor, 'email');
+      // console.log(payorEmail);
+      members.filter((member) => !member.equals(req.body.payor)).map(async (member) => {
         let data = {};
-        if (row.userEmail < req.body.email) {
+        if (member.email < payorEmail.email) {
           data = {
             group: req.body.group,
             description: req.body.description,
+            expense: expense._id,
             owe: splitAmount,
-            user1: row.userEmail,
-            user2: req.body.email,
+            user1: member,
+            user2: req.body.payor,
             clear: 0,
           };
         } else {
           data = {
             group: req.body.group,
             description: req.body.description,
+            expense: expense._id,
             owe: -splitAmount,
-            user1: req.body.email,
-            user2: row.userEmail,
+            user1: req.body.payor,
+            user2: member,
             clear: 0,
           };
         }

@@ -22,7 +22,7 @@ class Activity extends Component {
     // console.log(group);
     Axios.get('/activity', {
       params: {
-        user: cookie.load('user'),
+        user: cookie.load('id'),
         timezone: cookie.load('timezone'),
       },
     })
@@ -58,7 +58,7 @@ class Activity extends Component {
     ));
 
     const activityList = this.state.activities.filter((data) => {
-      if (data.group.includes(this.state.filterGroup)) {
+      if (data.group.name.includes(this.state.filterGroup)) {
         return data;
       }
     })
@@ -76,8 +76,8 @@ class Activity extends Component {
     })
     .map((activity) => (
       <tr>
-        <td>{activity.formatDate}</td>
-        <td>{activity['user.name']} paid {numeral(activity.amount).format('0,0.00')} {currency} for {activity.description} in group {activity.group}</td>
+        <td>{activity.date}</td>
+        <td>{activity.payor.name} paid {numeral(activity.amount).format('0,0.00')} {currency} for {activity.description} in group {activity.group.name}</td>
       </tr>
     ));
 

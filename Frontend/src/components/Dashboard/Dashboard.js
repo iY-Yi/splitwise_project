@@ -19,10 +19,10 @@ class Dashboard extends Component {
 
   // get all balances
   componentDidMount() {
-    this.setState({ user: cookie.load('user') });
+    this.setState({ user: cookie.load('id') });
     Axios.get('/dashboard', {
       params: {
-        user: cookie.load('user'),
+        user: cookie.load('id'),
       },
     })
       .then((response) => {
@@ -51,7 +51,7 @@ class Dashboard extends Component {
     }
     else {
       const data = {
-        user: cookie.load('user'),
+        user: cookie.load('id'),
         user2: this.state.userSelected,
       }
       Axios.post('/settle', data)
@@ -73,7 +73,7 @@ class Dashboard extends Component {
     const owesList = this.state.owes
       .map((record) => (
         <tr>
-          <td><input type="radio" class="form-check-input" name="selectRow" value={record.email} onClick={this.selectRow} /></td>
+          <td><input type="radio" class="form-check-input" name="selectRow" value={record.userId} onClick={this.selectRow} /></td>
           <td>{record.name}</td>
           <td>{numeral(record.balance).format('0,0.00')} {currency}</td>
         </tr>
@@ -82,7 +82,7 @@ class Dashboard extends Component {
     const owedList = this.state.owed
       .map((record) => (
         <tr>
-          <td><input type="radio" class="form-check-input" name="selectRow" value={record.email} onClick={this.selectRow} /></td>
+          <td><input type="radio" class="form-check-input" name="selectRow" value={record.userId} onClick={this.selectRow} /></td>
           <td>{record.name}</td>
           <td>{numeral(record.balance).format('0,0.00')} {currency}</td>
         </tr>
@@ -91,10 +91,10 @@ class Dashboard extends Component {
     const detailsList = this.state.details.map((d) => {
       console.log(d);
       if (d.total < 0) {
-        return(<li class="list-group-item">{d.user2===this.state.user? 'You': d['U2.name']} owes {d.user1===this.state.user? 'you': d['U1.name']} {numeral(-d.total).format('0,0.00')} {currency} in group {d.group}</li>);
+        return(<li class="list-group-item">{d.user2===this.state.user? 'You': d.U2[0].name} owes {d.user1===this.state.user? 'you': d.U1[0].name} {numeral(-d.total).format('0,0.00')} {currency} in group {d.groupDetails[0].name}</li>);
       }
       else {
-        return(<li class="list-group-item">{d.user1===this.state.user? 'You': d['U1.name']} owes {d.user2===this.state.user? 'you': d['U2.name']} {numeral(d.total).format('0,0.00')} {currency} in group {d.group}</li>);
+        return(<li class="list-group-item">{d.user1===this.state.user? 'You': d.U1[0].name} owes {d.user2===this.state.user? 'you': d.U2[0].name} {numeral(d.total).format('0,0.00')} {currency} in group {d.groupDetails[0].name}</li>);
       }
     });
     return (
