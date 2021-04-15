@@ -54,8 +54,8 @@ class AllGroup extends Component{
 
   leaveGroup = (e) => {
     const data = {
-      groupName: e.target.value,
-      userEmail: this.state.user,
+      group: e.target.value,
+      user: this.state.user,
     };
     Axios.post('/group/leave', data)
     .then(()=> {

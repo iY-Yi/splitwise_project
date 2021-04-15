@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 // const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const { checkAuth } = require('./Utils/passport');
 
 app.set('view engine', 'ejs');
 
@@ -42,9 +43,9 @@ app.use((req, res, next) => {
 // const { Sequelize, Op } = require('sequelize');
 
 const mongoose = require('mongoose');
-const { mongoDB } = require('./db_config');
+const { mongoDB } = require('./Utils/config');
 const {
-  Expense, User, GroupUser, Balance,
+  Expense, User, Balance,
 } = require('./db_models');
 
 const options = {
@@ -71,7 +72,7 @@ app.use('/user', userRoutes);
 app.use('/group', groupRoutes);
 
 // display transactions in dashboard
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard', checkAuth, (req, res) => {
   (async () => {
     try {
       const { user } = req.query;
@@ -187,7 +188,7 @@ app.get('/dashboard', (req, res) => {
 });
 
 // settle up transaction between two users
-app.post('/settle', (req, res) => {
+app.post('/settle', checkAuth, (req, res) => {
   console.log(req.body);
   const { user, user2 } = req.body;
   // update clear flag to 1

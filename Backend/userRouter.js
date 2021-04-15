@@ -1,12 +1,18 @@
 const express = require('express');
 // password encryption
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const saltRound = 10;
 const multer = require('multer');
 const { User } = require('./db_models');
+const { secret } = require('./Utils/config');
+const { auth } = require('./Utils/passport');
+const { checkAuth } = require('./Utils/passport');
 
 const userRouter = express.Router();
+
+auth();
 
 userRouter.post('/signup', (req, res) => {
   req.body.avatar = '/default.jpg';
@@ -62,7 +68,13 @@ userRouter.post('/login', (req, res) => {
             res.cookie('user', user.email, { maxAge: 86400000, httpOnly: false, path: '/' });
             res.cookie('currency', user.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
             res.cookie('timezone', user.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
-            res.status(200).end(JSON.stringify(user));
+
+            const payload = { _id: user._id, name: user.name };
+            const token = jwt.sign(payload, secret, { expiresIn: 100800 }); // 30 min
+            const data = { user, token: `JWT ${token}` };
+            // localStorage.setItem('token', token);
+            // res.status(200).end(`JWT${token}`);
+            res.status(200).end(JSON.stringify(data));
           } else if (!match) {
             res.status(401).send('WRONG_PASSWORD');
           }
@@ -78,7 +90,7 @@ userRouter.post('/login', (req, res) => {
     });
 });
 
-userRouter.get('/profile/:email', (req, res) => {
+userRouter.get('/profile/:email', checkAuth, (req, res) => {
   const { email } = req.params;
   User.findOne({ email })
     .then((user) => {
@@ -89,6 +101,7 @@ userRouter.get('/profile/:email', (req, res) => {
       }
     })
     .catch((e) => {
+      console.log(e);
       res.status(400).end();
     });
 });
@@ -115,7 +128,7 @@ userRouter.post('/upload', (req, res) => {
   });
 });
 
-userRouter.post('/update', (req, res) => {
+userRouter.post('/update', checkAuth, (req, res) => {
   // console.log(req.body);
   User.findOneAndUpdate({ _id: req.body._id }, req.body)
     .then((user) => {

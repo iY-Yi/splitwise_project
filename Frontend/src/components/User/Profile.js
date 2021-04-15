@@ -22,9 +22,10 @@ class Profile extends Component{
   };
 
   componentDidMount(){
-    const id = cookie.load('user');
+    const email = cookie.load('user');
     // console.log(id);
-    Axios.get(`/user/profile/${id}`)
+    Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
+    Axios.get(`/user/profile/${email}`)
     .then((response) => {
       this.setState({ user : response.data, error: '', });
       // console.log(this.state);
@@ -63,7 +64,7 @@ class Profile extends Component{
   
       // update in database
       const {user} = this.state;
-
+      Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
       const response = await Axios.post("/user/update", user)
       // console.log("Profile saved: ", response.status);
       this.setState({ saveStatus: true, disabled: true, error: '', });

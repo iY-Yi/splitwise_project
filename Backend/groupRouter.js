@@ -3,8 +3,9 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 const { Sequelize, Op } = require('sequelize');
 const {
-  User, Group, Invite, Expense, Balance,
+  User, Group, Expense, Balance,
 } = require('./db_models');
+const { checkAuth } = require('./Utils/passport');
 
 const groupRouter = express.Router();
 
@@ -123,37 +124,37 @@ groupRouter.get('/all', (req, res) => {
 
 // leave group
 groupRouter.post('/leave', (req, res) => {
-  // console.log(req.body);
-  Balance.findAll({
-    where: {
-      clear: 0,
-      group: req.body.groupName,
-      [Op.or]: { user1: req.body.userEmail, user2: req.body.userEmail },
+  console.log(req.body);
+  const { group, user } = req.body;
+  Balance.aggregate([
+    {
+      $match: {
+        $and: [{ clear: false }, { group: mongoose.Types.ObjectId(group) },
+          { $or: [{ user1: mongoose.Types.ObjectId(user) }, { user2: mongoose.Types.ObjectId(user) }] }],
+      },
     },
-    group: ['user1', 'user2'],
-    attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
-    raw: true,
-  })
+    {
+      $group: {
+        _id: { user1: '$user1', user2: '$user2' },
+        total: { $sum: '$owe' },
+      },
+    },
+  ])
     .then((data) => {
+      console.log(data);
       data.map((balance) => {
         if (balance.total !== 0) {
           throw new Error('OPEN_BALANCE');
         }
       });
     })
-    .then(() => {
-      GroupUser.destroy({
-        where: {
-          userEmail: req.body.userEmail,
-          groupName: req.body.groupName,
-        },
-      });
-    })
+    .then(() => User.update({ _id: user }, { $pull: { groups: group } }))
+    .then(() => Group.update({ _id: group }, { $pull: { users: user } }))
     .then(() => {
       res.status(200).end();
     })
     .catch((err) => {
-      // console.log(err);
+      console.log(err);
       res.status(400).send(err);
     });
 });
@@ -227,19 +228,6 @@ groupRouter.get('/expense/:group', (req, res) => {
           },
         },
       ]);
-      // console.log(balances);
-      // console.log(balances[0].U1);
-      // console.log(balances[0].U1[0].name);
-      // const balances = await Balance.findAll({
-      //   where: {
-      //     clear: 0,
-      //     group,
-      //   },
-      //   include: [{ model: User, as: 'U1' }, { model: User, as: 'U2' }],
-      //   group: ['user1', 'user2'],
-      //   attributes: ['user1', 'user2', [Sequelize.fn('sum', Sequelize.col('owe')), 'total']],
-      // });
-      // console.log(balances);
       res.status(200).send({
         expenses,
         balances,

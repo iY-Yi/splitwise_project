@@ -20,6 +20,7 @@ class Dashboard extends Component {
   // get all balances
   componentDidMount() {
     this.setState({ user: cookie.load('id') });
+    Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
     Axios.get('/dashboard', {
       params: {
         user: cookie.load('id'),
@@ -54,6 +55,7 @@ class Dashboard extends Component {
         user: cookie.load('id'),
         user2: this.state.userSelected,
       }
+      Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
       Axios.post('/settle', data)
       .then((response) => {
         this.setState({ message: 'Balance is settled.' });

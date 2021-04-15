@@ -10,7 +10,7 @@ class Login extends Component{
 
   constructor(props) {
     super(props);
-    this.state = { submitFlag: false};
+    this.state = { submitFlag: false };
   }
 
   handleChange = (e) => {

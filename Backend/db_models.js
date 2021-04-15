@@ -3,14 +3,14 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 // Sequelize connection, TO DELETE
-const { Sequelize, DataTypes } = require('sequelize');
-const config = require('./db_config');
+// const { Sequelize, DataTypes } = require('sequelize');
+// const config = require('./config');
 
-const sequelize = new Sequelize(config.database, config.username, config.password, {
-  host: config.host,
-  dialect: 'mysql',
-  logging: false, // disable logging; defailt: console.log
-});
+// const sequelize = new Sequelize(config.database, config.username, config.password, {
+//   host: config.host,
+//   dialect: 'mysql',
+//   logging: false, // disable logging; defailt: console.log
+// });
 
 const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
@@ -62,37 +62,6 @@ const balanceSchema = new Schema({
 });
 const Balance = mongoose.model('balance', balanceSchema);
 
-// const Balance = sequelize.define('balance', {
-//   id: {
-//     type: DataTypes.UUID,
-//     primaryKey: true,
-//     defaultValue: Sequelize.UUIDV4,
-//   },
-//   group: DataTypes.STRING,
-//   date: {
-//     type: DataTypes.DATE,
-//     defaultValue: Sequelize.NOW,
-//   },
-//   description: DataTypes.STRING,
-//   user1: DataTypes.STRING,
-//   user2: DataTypes.STRING,
-//   owe: DataTypes.DECIMAL,
-//   clear: DataTypes.BOOLEAN,
-// }, {
-//   tableName: 'balance',
-//   timestamps: false,
-// });
-
-// Balance.belongsTo(User, {
-//   foreignKey: 'user1',
-//   as: 'U1',
-// });
-
-// Balance.belongsTo(User, {
-//   foreignKey: 'user2',
-//   as: 'U2',
-// });
-
 module.exports = {
-  sequelize, User, Group, Balance, Expense,
+  User, Group, Balance, Expense,
 };
