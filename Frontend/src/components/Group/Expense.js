@@ -115,27 +115,29 @@ class Expense extends Component {
       expenseId: this.state.expenseDisplay._id,
       commentId: e.target.value,
     }
-    Axios.post('/group/expense/deleteComment', data)
-    .then ((response) => {
-      const updatedExpense = response.data;
-      let expenses = [...this.state.expenses];
-      // const index = expenses.findIndex(el => el._id === updatedExpense._id);
-      // console.log(index);
-      expenses[this.state.expenseIdx] = {...updatedExpense};
-      this.setState({
-        message: "Delete comment successfully.",
-        expenses: expenses,
-        expenseDisplay: response.data,
-      });
-      // console.log(this.state.expenses);
-      // this.componentDidMount();
-    })
-    .catch((err) => {
-      this.setState({
-        message: 'Delete comment failed!',
-      });
-      // console.log(err);
-    })
+    if (confirm("Please confirm to delete the note!")) {
+      Axios.post('/group/expense/deleteComment', data)
+      .then ((response) => {
+        const updatedExpense = response.data;
+        let expenses = [...this.state.expenses];
+        // const index = expenses.findIndex(el => el._id === updatedExpense._id);
+        // console.log(index);
+        expenses[this.state.expenseIdx] = {...updatedExpense};
+        this.setState({
+          message: "Delete comment successfully.",
+          expenses: expenses,
+          expenseDisplay: response.data,
+        });
+        // console.log(this.state.expenses);
+        // this.componentDidMount();
+      })
+      .catch((err) => {
+        this.setState({
+          message: 'Delete comment failed!',
+        });
+        // console.log(err);
+      })
+    }
   }
 
   displayNotes = (e) => {
@@ -213,7 +215,7 @@ class Expense extends Component {
                     {this.state.expenseDisplay.notes.map(note => 
                       <div class="card-body">
                         <p>{note.comment}</p>
-                        <p>{note.userName} added on {note.date}</p>
+                        <p><i>{note.userName} added on {note.date}</i></p>
                         {note.userId === cookie.load('id')? (<button class="btn btn-secondary btn-sm" value={note._id} onClick={(e)=>this.deleteComment(e)}>Delete</button>):(<div />)}
                         </div>)}
                   </div>

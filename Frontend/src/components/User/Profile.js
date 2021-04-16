@@ -24,7 +24,7 @@ class Profile extends Component{
   componentDidMount(){
     const email = cookie.load('user');
     // console.log(id);
-    Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
+    // Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
     Axios.get(`/user/profile/${email}`)
     .then((response) => {
       this.setState({ user : response.data, error: '', });

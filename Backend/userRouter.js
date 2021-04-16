@@ -92,7 +92,7 @@ userRouter.post('/login', (req, res) => {
     });
 });
 
-userRouter.get('/profile/:email', checkAuth, (req, res) => {
+userRouter.get('/profile/:email', (req, res) => {
   const { email } = req.params;
   User.findOne({ email })
     .then((user) => {

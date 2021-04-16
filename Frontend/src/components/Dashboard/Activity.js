@@ -13,6 +13,10 @@ class Activity extends Component {
       filterGroup: '',
       sort: '',
       message: '',
+      currentPage: 1,
+      pageSize: 2,
+      // entryCount: 1,
+      // maxPage: 1,
     };
   }
 
@@ -33,11 +37,25 @@ class Activity extends Component {
           activities: response.data.activities,
           groups: response.data.groupNames,
           sort: 'desc',
+          // maxPage: Math.ceil(response.data.activities.length / this.state.pageSize),
         });
       })
       .catch((err) => {
         this.setState({ message: 'Loading_Failed' });
       });
+  }
+
+  handleChange = (e) => {
+    this.setState({
+      [e.target.name]: e.target.value
+    });
+  }
+
+  pageClick(number) {
+    console.log(number);
+    this.setState({
+      currentPage: number
+    });
   }
 
   filterGroup = (e) => {
@@ -56,6 +74,13 @@ class Activity extends Component {
     const groupList = this.state.groups.map((group) => (
       <option value={group}>{group}</option>
     ));
+    
+    const {currentPage, pageSize} = this.state;
+    const indexOfLast = currentPage * pageSize;
+    const indexOfFirst = indexOfLast - pageSize;
+
+    console.log(indexOfFirst);
+    console.log(indexOfLast);
 
     const activityList = this.state.activities.filter((data) => {
       if (data.group.name.includes(this.state.filterGroup)) {
@@ -74,12 +99,30 @@ class Activity extends Component {
         return 0;          
       }
     })
+    .slice(indexOfFirst, indexOfLast)
     .map((activity) => (
       <tr>
         <td>{activity.date}</td>
         <td>{activity.payor.name} paid {numeral(activity.amount).format('0,0.00')} {currency} for {activity.description} in group {activity.group.name}</td>
       </tr>
     ));
+
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(this.state.activities.length / this.state.pageSize); i++) {
+      pageNumbers.push(i);
+    }
+
+    const renderPageNumbers = pageNumbers.map(number => {
+      return (
+        // <li class="page-item" key={number} id={number}  onClick={e => this.pageClick(e)}>
+        <li class="page-item" key={number} id={number}>
+          <a class="page-link" onClick={()=>this.pageClick(number)}>
+            {number}
+          </a>
+        </li>
+      );
+    });
+
 
     return (    
       <div className="container-fluid">
@@ -92,21 +135,32 @@ class Activity extends Component {
           <div className="col-sm-2">
             <label>Filter group: </label>
           </div>
-          <div className="col-sm-4">
+          <div className="col-sm-2">
             <select className="form-control" name="group" id="group" value={this.state.filterGroup} onChange={this.filterGroup}>
               <option value=''>All groups</option>
               {groupList}
             </select>
           </div>
-          <div className="col-sm-2">
+          <div className="col-sm-1">
             <label>Sort: </label>
           </div>
-          <div className="col-sm-4">
+          <div className="col-sm-3">
             <select className="form-control" name="sort" id="sort" value={this.state.sort} onChange={this.sorting}>
               <option value='desc'>Most recent first</option>
               <option value='asc'>Most recent last</option>
             </select>
           </div>
+          <div className="col-sm-2">
+            <label>Entries per page: </label>
+          </div>
+          <div className="col-sm-2">
+            <select className="form-control" name="pageSize" id="pageSize" value={this.state.pageSize} onChange={this.handleChange}>
+              <option value='2'>2</option>
+              <option value='5'>5</option>
+              <option value='10'>10</option>
+            </select>
+          </div>
+
         </div>
         <br />
         { this.state.activities.length === 0 && <div className="alert alert-info">No activities.</div>}
@@ -115,6 +169,9 @@ class Activity extends Component {
               {activityList}
             </tbody>
           </table>
+          <ul class="pagination justify-content-center">
+            {renderPageNumbers}
+          </ul>
       </div>
 
     );
