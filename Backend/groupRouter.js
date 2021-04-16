@@ -285,4 +285,38 @@ groupRouter.post('/expense/add', (req, res) => {
   })();
 });
 
+// add comment to expense
+groupRouter.post('/expense/addComment', (req, res) => {
+  // console.log(req.body);
+  (async () => {
+    try {
+      const expense = await Expense.findById(req.body.expense);
+      const note = { comment: req.body.comment, userId: req.body.userId, userName: req.body.userName };
+      await expense.notes.push(note);
+      await expense.save();
+      res.status(200).send(expense);
+    } catch (err) {
+      console.log(err);
+      res.status(400).send(err);
+    }
+  })();
+});
+
+// add comment to expense
+groupRouter.post('/expense/deleteComment', (req, res) => {
+  // console.log(req.body);
+  (async () => {
+    try {
+      const expense = await Expense.findById(req.body.expenseId);
+      await expense.notes.id(req.body.commentId).remove();
+      await expense.save();
+      res.status(200).send(expense);
+    } catch (err) {
+      console.log(err);
+      res.status(400).send(err);
+    }
+  })();
+});
+
+
 module.exports = groupRouter;

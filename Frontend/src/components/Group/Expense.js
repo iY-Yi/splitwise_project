@@ -16,6 +16,10 @@ class Expense extends Component {
       amount: -1,
       message: '',
       authorized: false,  // TO DO: change to false
+      expenseIdx: 0,
+      expenseDisplay: {},
+      expenseSelect: false,
+      addComment: '',
     };
   }
 
@@ -75,18 +79,90 @@ class Expense extends Component {
     })
   }
 
+  addComment = () => {
+    const data = {
+      expense: this.state.expenseDisplay._id,
+      comment: this.state.addComment,
+      userId: cookie.load('id'),
+      userName: cookie.load('name'),
+    }
+    Axios.post('/group/expense/addComment', data)
+    .then ((response) => {
+      const updatedExpense = response.data;
+      let expenses = [...this.state.expenses];
+      // const index = expenses.findIndex(el => el._id === updatedExpense._id);
+      // console.log(index);
+      expenses[this.state.expenseIdx] = {...updatedExpense};
+      this.setState({
+        message: "Add comment successfully.",
+        expenses: expenses,
+        addComment: '',
+        expenseDisplay: response.data,
+      });
+      console.log(this.state.expenses);
+      // this.componentDidMount();
+    })
+    .catch((err) => {
+      this.setState({
+        message: 'Add comment failed!',
+      });
+      // console.log(err);
+    })
+  }
+
+  deleteComment = (e) => {
+    const data = {
+      expenseId: this.state.expenseDisplay._id,
+      commentId: e.target.value,
+    }
+    Axios.post('/group/expense/deleteComment', data)
+    .then ((response) => {
+      const updatedExpense = response.data;
+      let expenses = [...this.state.expenses];
+      // const index = expenses.findIndex(el => el._id === updatedExpense._id);
+      // console.log(index);
+      expenses[this.state.expenseIdx] = {...updatedExpense};
+      this.setState({
+        message: "Delete comment successfully.",
+        expenses: expenses,
+        expenseDisplay: response.data,
+      });
+      // console.log(this.state.expenses);
+      // this.componentDidMount();
+    })
+    .catch((err) => {
+      this.setState({
+        message: 'Delete comment failed!',
+      });
+      // console.log(err);
+    })
+  }
+
+  displayNotes = (e) => {
+    // console.log(e.target.value);
+    const idx = e.target.value;
+    this.setState({
+      expenseIdx: idx,
+      expenseDisplay: this.state.expenses[idx],
+      expenseSelect: true,
+      // notesDisplay: [...this.state.expenses.notes],
+    });
+  }
+
   render() {
-    if (!cookie.load('user')) {
+    if (!cookie.load('id')) {
       return <Redirect to="/landing" />;
     }
     const currency = cookie.load('currency');
-    let expenses = this.state.expenses.map((expense) => {
+    let expenses = this.state.expenses.map((expense, index) => {
       return(
           <tr>
             <td>{expense.date}</td>
             <td>{expense.description}</td>
             <td>{expense.payor.name} paid</td>
             <td>{numeral(expense.amount).format('0,0.00')} {currency}</td>
+            {/* <td><a href={"/group/expense/notes/"+ expense._id}><button type="button" class="btn btn-secondary btn-sm" value={expense._id}>Notes</button></a></td> */}
+            <td><button class="btn btn-secondary btn-sm" data-toggle="collapse" data-target="#notes" value={index} onClick={(e)=>this.displayNotes(e)}>Display Notes</button></td>
           </tr>
       )      
     }); 
@@ -103,6 +179,7 @@ class Expense extends Component {
         )        
       }
     });
+
     return (
       <div className="container-fluid">
         <h3>
@@ -126,6 +203,29 @@ class Expense extends Component {
                 {expenses}
               </tbody>
             </table>
+
+            {/* collapse to display and add comments */}
+            <div id="notes" class="collapse">
+              {this.state.expenseSelect ? (
+                <div>
+                  <div class="card">
+                    <div class="card-header">{this.state.expenseDisplay.description} {numeral(this.state.expenseDisplay.amount).format('0,0.00')} {currency}</div>
+                    {this.state.expenseDisplay.notes.map(note => 
+                      <div class="card-body">
+                        <p>{note.comment}</p>
+                        <p>{note.userName} added on {note.date}</p>
+                        {note.userId === cookie.load('id')? (<button class="btn btn-secondary btn-sm" value={note._id} onClick={(e)=>this.deleteComment(e)}>Delete</button>):(<div />)}
+                        </div>)}
+                  </div>
+                  <form>
+                    <textarea class="form-control" rows="3" id="comment" name="addComment" onChange={this.handleChange} placeholder="Add a comment.."/>
+                    <button type="button" className="btn btn-primary" onClick={this.addComment}>Add</button>
+                  </form>
+                </div>
+              ) : (<div />)
+              }
+            </div>
+
           </div>
           <div class="col-md-4">
             <h5>Group Balances</h5>
@@ -162,6 +262,7 @@ class Expense extends Component {
             </div>
           </div>
         </div>
+
       </div>
     );
   }

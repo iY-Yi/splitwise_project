@@ -43,6 +43,7 @@ userRouter.post('/signup', (req, res) => {
               // console.log(savedUser);
               res.cookie('id', savedUser._id.toString(), { maxAge: 86400000, httpOnly: false, path: '/' });
               res.cookie('user', savedUser.email, { maxAge: 86400000, httpOnly: false, path: '/' });
+              res.cookie('name', savedUser.name, { maxAge: 86400000, httpOnly: false, path: '/' });
               res.cookie('currency', savedUser.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
               res.cookie('timezone', savedUser.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
               res.status(200).end(JSON.stringify(newUser));
@@ -66,6 +67,7 @@ userRouter.post('/login', (req, res) => {
           if (match) {
             res.cookie('id', user._id.toString(), { maxAge: 86400000, httpOnly: false, path: '/' });
             res.cookie('user', user.email, { maxAge: 86400000, httpOnly: false, path: '/' });
+            res.cookie('name', user.name, { maxAge: 86400000, httpOnly: false, path: '/' });
             res.cookie('currency', user.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
             res.cookie('timezone', user.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
 

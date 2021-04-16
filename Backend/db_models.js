@@ -37,12 +37,20 @@ const groupSchema = new Schema({
 });
 const Group = mongoose.model('group', groupSchema);
 
+const noteSchema = new Schema({
+  comment: { type: String },
+  userId: { type: Schema.ObjectId },
+  userName: { type: String },
+  date: { type: Date, default: Date.now },
+});
+
 const expenseSchema = new Schema({
   group: { type: Schema.ObjectId, ref: 'group' },
   payor: { type: Schema.ObjectId, ref: 'user' },
   description: { type: String },
   date: { type: Date, default: Date.now },
   amount: { type: Number },
+  notes: [noteSchema],
 }, {
   versionKey: false,
 });
