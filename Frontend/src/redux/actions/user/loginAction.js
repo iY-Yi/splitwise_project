@@ -1,6 +1,6 @@
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
-import { USER_LOGIN, USER_LOGOUT } from './types';
+import { USER_LOGIN, USER_LOGOUT } from '../types';
 
 export const userLogin = (loginData) => (dispatch) => {
   axios.defaults.withCredentials = true;

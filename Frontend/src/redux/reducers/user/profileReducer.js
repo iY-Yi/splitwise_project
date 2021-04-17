@@ -1,29 +1,28 @@
-import { USER_LOGIN, USER_LOGOUT, USER_SIGNUP } from '../actions/types';
+import { GET_USER, UPDATE_USER } from '../../actions/types';
 
 const initialState = {
   user: {},
 };
 
-function loginReducer(state = initialState, action) {
+function profileReducer(state = initialState, action) {
+  // console.log(action.payload);
   switch (action.type) {
-    case USER_LOGIN:
+    case GET_USER:
+      return {
+        ...state,
+        user: action.payload, // add user to state
+      };
+    case UPDATE_USER:
       return {
         ...state,
         user: action.payload,
       };
-    case USER_SIGNUP:
-      return {
-        ...state,
-        user: action.payload,
-      };
-    case USER_LOGOUT:
-      return {};
     default:
       return state;
   }
 }
 
-export default loginReducer;
+export default profileReducer;
 
 // return Object.assign({}, state, {
 //   books: state.books.concat(action.payload)

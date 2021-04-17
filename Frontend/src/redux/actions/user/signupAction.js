@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { USER_SIGNUP } from './types';
+import { USER_SIGNUP } from '../types';
 
 // eslint-disable-next-line import/prefer-default-export
 export const userSignup = (signupData) => (dispatch) => {

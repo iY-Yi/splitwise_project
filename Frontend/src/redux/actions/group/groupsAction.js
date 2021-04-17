@@ -1,39 +1,40 @@
 import axios from 'axios';
 import cookie from 'react-cookies';
-import { GET_USER, UPDATE_USER } from './types';
+import { GET_GROUPS, LEAVE_GROUP } from '../types';
 
-// eslint-disable-next-line import/prefer-default-export
-export const getUser = () => (dispatch) => {
-  const id = cookie.load('id');
-  axios.defaults.headers.common.authorization = localStorage.getItem('token');
-  axios.get(`/user/profile/${id}`)
+export const getGroups = () => (dispatch) => {
+  axios.get('/group/all', {
+    params: {
+      user: cookie.load('id'),
+    },
+  })
     .then((Response) => dispatch({
-      type: GET_USER,
+      type: GET_GROUPS,
       payload: Response.data,
     }))
     .catch((error) => {
       console.log(error);
       if (error.response && error.response.data) {
         return dispatch({
-          type: GET_USER,
+          type: GET_GROUPS,
           payload: error.response.data,
         });
       }
     });
 };
 
-export const updateUser = (updateData) => (dispatch) => {
+export const leaveGroup = (updateData) => (dispatch) => {
   axios.defaults.headers.common.authorization = localStorage.getItem('token');
   axios.post('/user/update', updateData)
     .then((Response) => dispatch({
-      type: UPDATE_USER,
+      type: LEAVE_GROUP,
       payload: Response.data,
     }))
     .catch((error) => {
       console.log(error);
       if (error.response && error.response.data) {
         return dispatch({
-          type: UPDATE_USER,
+          type: LEAVE_GROUP,
           payload: error.response.data,
         });
       }

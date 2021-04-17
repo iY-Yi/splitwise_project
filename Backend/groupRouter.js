@@ -114,10 +114,11 @@ groupRouter.get('/all', (req, res) => {
       const user = await User.findById(userId)
         .populate('invites')
         .populate('groups');
-      res.status(200).send({ user });
+      // res.status(200).send({ user });
+      res.status(200).end(JSON.stringify(user));
     } catch (e) {
       console.log(e);
-      res.status(400).end();
+      res.status(400).end(JSON.stringify(e));
     }
   })();
 });

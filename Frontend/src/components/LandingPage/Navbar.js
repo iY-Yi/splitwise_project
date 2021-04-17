@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import cookie from 'react-cookies';
 import { Redirect } from 'react-router';
-import { userLogout } from '../../js/actions/loginAction';
+import { userLogout } from '../../redux/actions/user/loginAction';
 import { connect } from 'react-redux';
 
 // create the Navbar Component

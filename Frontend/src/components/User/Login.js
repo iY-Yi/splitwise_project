@@ -1,7 +1,7 @@
 // import Axios from 'axios';
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
-import { userLogin } from '../../js/actions/loginAction';
+import { userLogin } from '../../redux/actions/user/loginAction';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import cookie from 'react-cookies';

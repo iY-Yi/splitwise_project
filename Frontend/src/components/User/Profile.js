@@ -5,7 +5,7 @@ import moment from 'moment-timezone';
 import {Redirect} from 'react-router';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { getUser, updateUser } from '../../js/actions/profileAction';
+import { getUser, updateUser } from '../../redux/actions/user/profileAction';
 
 class Profile extends Component{
   constructor(props) {
