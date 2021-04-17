@@ -4,6 +4,10 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// // Provider pass store to the whole app. Add provider in App.js
+// ReactDOM.render(<Provider store={store}><App /></Provider>,
+//   document.getElementById('root'));
+
 ReactDOM.render(
   <React.StrictMode>
     <App />

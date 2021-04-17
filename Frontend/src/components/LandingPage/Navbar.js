@@ -15,8 +15,11 @@ class Navbar extends Component {
 
   handleLogout = () => {
       cookie.remove('user', { path: '/' })
+      cookie.remove('name', { path: '/' })
       cookie.remove('currency', { path: '/' })
       cookie.remove('timezone', { path: '/' })
+      cookie.remove('id', { path: '/' })
+      localStorage.clear();
       this.props.userLogout();
   }
 

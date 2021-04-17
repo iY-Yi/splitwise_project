@@ -70,15 +70,16 @@ class Login extends Component{
 // login component includes user object and userLogin action/function.
 // define available prop types accessable in login component 
 Login.propTypes = {
-  userLogin: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired
+  userLogin: PropTypes.func.isRequired, // user login function
+  user: PropTypes.object.isRequired,  // user state
 }
 
 const mapStateToProps = (state) => {
   return ({
-    user: state.login.user // user in login reducer
+    user: state.login.user // user in login reducer, map global state to component props
   });
 };
 
-// export default Login;
+// export default Login; // const Login = connect(null, mapDispatchToProps)(Login) mapp between props and actions
+// map global state or dispatch actions to props. then they are available in props
 export default connect(mapStateToProps, { userLogin})(Login);

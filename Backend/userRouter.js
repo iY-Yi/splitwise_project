@@ -46,7 +46,11 @@ userRouter.post('/signup', (req, res) => {
               res.cookie('name', savedUser.name, { maxAge: 86400000, httpOnly: false, path: '/' });
               res.cookie('currency', savedUser.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
               res.cookie('timezone', savedUser.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
-              res.status(200).end(JSON.stringify(newUser));
+
+              const payload = { _id: savedUser._id, name: savedUser.name };
+              const token = jwt.sign(payload, secret, { expiresIn: 86400000 }); // 100800 30 min
+              const data = { savedUser, token: `JWT ${token}` };
+              res.status(200).end(JSON.stringify(data));
             });
         } catch (err) {
           res.status(500).end(JSON.stringify(err));
@@ -72,7 +76,7 @@ userRouter.post('/login', (req, res) => {
             res.cookie('timezone', user.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
 
             const payload = { _id: user._id, name: user.name };
-            const token = jwt.sign(payload, secret, { expiresIn: 100800 }); // 30 min
+            const token = jwt.sign(payload, secret, { expiresIn: 86400000 }); // 100800 30 min
             const data = { user, token: `JWT ${token}` };
             // localStorage.setItem('token', token);
             // res.status(200).end(`JWT${token}`);
@@ -92,10 +96,12 @@ userRouter.post('/login', (req, res) => {
     });
 });
 
-userRouter.get('/profile/:email', (req, res) => {
-  const { email } = req.params;
-  User.findOne({ email })
+userRouter.get('/profile/:id', (req, res) => {
+  const { id } = req.params;
+  User.findById(id)
     .then((user) => {
+      console.log(id);
+      console.log(user);
       if (user) {
         res.status(200).send(user);
       } else {
@@ -132,15 +138,16 @@ userRouter.post('/upload', (req, res) => {
 
 userRouter.post('/update', checkAuth, (req, res) => {
   // console.log(req.body);
-  User.findOneAndUpdate({ _id: req.body._id }, req.body)
+  User.findOneAndUpdate({ _id: req.body.id }, req.body, { returnOriginal: false })
     .then((user) => {
       console.log('saved');
+      // console.log(user);
       res.cookie('currency', req.body.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
       res.cookie('timezone', req.body.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
-      res.status(200).end();
+      res.status(200).end(JSON.stringify(user));
     })
     .catch((e) => {
-      res.status(400).end();
+      res.status(400).end(JSON.stringify(e));
     });
 });
 

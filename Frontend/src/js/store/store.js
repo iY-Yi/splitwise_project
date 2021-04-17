@@ -9,7 +9,9 @@ const middleware = [thunk];
 
 const initialState = {};
 
+// redux_devtools for debugging
 const storeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+// create store, reducers are functions to change store
 const store = createStore(
   rootReducer,
   initialState,

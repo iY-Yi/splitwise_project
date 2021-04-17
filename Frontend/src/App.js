@@ -13,12 +13,12 @@ class App extends Component {
     return (
       // Use Browser Router to route to different pages
       <Provider store={store}>
-        <BrowserRouter>
-          <div>
+        <div>
+          <BrowserRouter>
             {/* App Component Has a Child Component called Main */}
             <Main />
-          </div>
-        </BrowserRouter>
+          </BrowserRouter>
+        </div>
       </Provider>
     );
   }
