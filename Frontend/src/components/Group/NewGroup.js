@@ -5,7 +5,7 @@ import {Redirect} from 'react-router';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { getUserList, newGroup, sendInvite } from '../../redux/actions/group/newGroupAction';
-import { getCurrentUser } from '../../utils/utils';
+// import { getCurrentUser } from '../../utils/utils';
 
 class NewGroup extends Component{
 
@@ -24,34 +24,11 @@ class NewGroup extends Component{
     this.inviteUser = this.inviteUser.bind(this);
   }
 
-  // state = {
-  //   name: '',
-  //   image: '/default.jpg',
-  //   saveStatus: null,
-  //   fileSelected: '',
-  //   users: [],
-  //   creator: cookie.load('user'),
-  //   // members: [],
-  //   search: '',
-  //   message: '',
-  //   inviteMsg: '',
-  // };
 
   //get all users from backend  
   componentDidMount(){
     this.props.getUserList();
   }
-  //   Axios.get('/group/new')
-  //     .then((response) => {
-  //       //update the state with the response data
-  //       this.setState({
-  //         users : this.state.users.concat(response.data) 
-  //       })
-  //     })
-  //     .catch((e) => {
-  //       this.setState({ message: 'Loading failed!'});
-  //     });
-  // }
 
   handleChange = (e) => {
     this.setState({
@@ -74,7 +51,7 @@ class NewGroup extends Component{
     const inviteData= {
       groupName: this.state.name,
       user: e.target.value,
-      requestor: getCurrentUser(),
+      requestor: this.props.user._id,
     }
     this.props.sendInvite(inviteData);
   }
@@ -106,22 +83,11 @@ class NewGroup extends Component{
       name: this.state.name,
       image: this.state.image,
       fileSelected: this.state.fileSelected,
-      creator: getCurrentUser(),
+      creator: this.props.user._id,
       // members: this.state.members,     
     }
     this.props.newGroup(group);
   }
-  //   try {
-  //     const response = await Axios.post("/group/new", group)
-  //     console.log("Group created: ", response.status);
-  //     this.setState({ saveStatus: true,
-  //       message : 'New group is created.'});
-  //     }
-  //   catch (e) {
-  //     console.log(e);
-  //     this.setState({saveStatus: false, message: 'Failed! Duplicate_Name', });
-  //   }
-  // }
 
   render(){
     if (!cookie.load('user')) {
@@ -200,11 +166,13 @@ NewGroup.propTypes = {
   sendInvite: PropTypes.func.isRequired,
   users: PropTypes.object.isRequired,
   group: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
   users: state.newGroup.users,
   group: state.newGroup.group,
+  user: state.login.user,
 });
 
 export default connect(mapStateToProps, { getUserList, newGroup, sendInvite })(NewGroup);

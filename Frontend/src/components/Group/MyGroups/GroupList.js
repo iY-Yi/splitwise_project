@@ -1,11 +1,12 @@
-import Axios from 'axios';
+// import Axios from 'axios';
 import React, {Component} from 'react';
-import cookie from 'react-cookies';
-import {Redirect} from 'react-router';
+// import cookie from 'react-cookies';
+// import {Redirect} from 'react-router';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { leaveGroup } from '../../../redux/actions/group/groupsAction';
-import { getCurrentUser } from '../../../utils/utils';
+// import { getCurrentUser } from '../../../utils/utils';
 
 class GroupList extends Component{
   constructor(props) {
@@ -21,10 +22,9 @@ class GroupList extends Component{
   }
 
   leaveGroup = (e) => {
-    console.log(getCurrentUser());
     const data = {
       group: e.target.value,
-      user: getCurrentUser(),
+      user: this.props.user._id
     };
     this.props.leaveGroup(data);
     // this.setState({ message: '' });
@@ -51,7 +51,7 @@ class GroupList extends Component{
     .map((group) => {
       return(
         <tr>
-          <td><a href={"/group/expense/"+ group._id}>{group.name}</a></td>
+          <td><Link to={"/group/expense/"+ group._id}>{group.name}</Link></td>
           <td>                                
             <button type="button" class="btn btn-secondary btn-sm" value={group._id} onClick={(e)=>this.leaveGroup(e)}>Leave</button>                
           </td>
@@ -78,10 +78,12 @@ class GroupList extends Component{
 GroupList.propTypes = {
   leaveGroup: PropTypes.func.isRequired,
   groups: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
   groups: state.groups.groups,
+  user: state.login.user,
 });
 
 export default connect(mapStateToProps, { leaveGroup })(GroupList);

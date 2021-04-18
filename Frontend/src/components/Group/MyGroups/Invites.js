@@ -4,7 +4,7 @@ import cookie from 'react-cookies';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { acceptInvite } from '../../../redux/actions/group/groupsAction';
-import { getCurrentUser } from '../../../utils/utils';
+// import { getCurrentUser } from '../../../utils/utils';
 
 class Invites extends Component{
   constructor(props) {
@@ -16,8 +16,9 @@ class Invites extends Component{
   acceptGroup = (e) => {
     const data = {
       group: e.target.value,
-      user: getCurrentUser(),
+      user: this.props.user._id,
     };
+    console.log(data);
     this.props.acceptInvite(data);
   }
     // Axios.put('/group/accept', data)
@@ -62,10 +63,12 @@ class Invites extends Component{
 Invites.propTypes = {
   acceptInvite: PropTypes.func.isRequired,
   invites: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
   invites: state.groups.invites,
+  user: state.login.user,
 });
 
 export default connect(mapStateToProps, { acceptInvite })(Invites);

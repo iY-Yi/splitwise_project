@@ -6,7 +6,7 @@ import Profile from './User/Profile';
 import NewGroup from './Group/NewGroup';
 import AllGroup from './Group/MyGroups/AllGroup';
 import Expense from './Group/Expense';
-import Navbar from './LandingPage/Navbar';
+import Navigationbar from './LandingPage/Navbar';
 import Landing from './LandingPage/Landing';
 import Dashboard from './Dashboard/Dashboard';
 import Activity from './Dashboard/Activity';
@@ -19,7 +19,7 @@ class Main extends Component {
       <div>
         {/* Render Different Component based on Route */}
         <Route exact path="/"><Redirect to="/landing" /></Route>
-        <Route path="/" component={Navbar} />
+        <Route path="/" component={Navigationbar} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/user/signup" component={Signup} />
         <Route path="/user/login" component={Login} />

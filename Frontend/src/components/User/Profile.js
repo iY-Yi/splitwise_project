@@ -5,7 +5,7 @@ import moment from 'moment-timezone';
 import {Redirect} from 'react-router';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { getUser, updateUser } from '../../redux/actions/user/profileAction';
+import { updateUser } from '../../redux/actions/user/profileAction';
 
 class Profile extends Component{
   constructor(props) {
@@ -22,7 +22,19 @@ class Profile extends Component{
   }
 
   componentWillMount() {
-    this.props.getUser();
+    // this.props.getUser();
+    const { user } = this.props;
+    const userData = {
+      id: user._id || this.state.id,
+      name: user.name || this.state.name,
+      email: user.email || this.state.email,
+      avatar: user.avatar || this.state.avatar,
+      phone: user.phone || this.state.phone,
+      language: user.language || this.state.language,
+      currency: user.currency || this.state.currency,
+      timezone: user.timezone || this.state.timezone,
+    }
+    this.setState(userData);  
   }
 
   componentWillReceiveProps(nextProps) { // nextProps is the prop and actually the global state
@@ -158,13 +170,13 @@ class Profile extends Component{
 }
 
 Profile.propTypes = {
-  getUser: PropTypes.func.isRequired,
+  // getUser: PropTypes.func.isRequired,
   updateUser: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
-  user: state.profile.user,
+  user: state.login.user,
 });
 
-export default connect(mapStateToProps, { getUser, updateUser })(Profile);
+export default connect(mapStateToProps, { updateUser })(Profile);

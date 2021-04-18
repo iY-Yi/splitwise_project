@@ -39,14 +39,14 @@ class Signup extends Component{
     if (cookie.load('user')) {
       return <Redirect to="/dashboard" />;
     }
-    // console.log('In signup', this.props);
+    console.log(this.props.user);
     let message = '';
     if (this.state.submitted === true && this.props.user && this.props.user.email) {
       // console.log('redirect to dashboard');
       return <Redirect to= "/dashboard" />;
     }
-    else if (this.props.user && this.props.user.errors) {
-      message = this.props.user.errors.body;
+    else if (this.props.user && this.props.user.error) {
+      message = this.props.user.error;
     }
       return(
           <div>
@@ -76,7 +76,8 @@ Signup.propTypes = {
 
 const mapStateToProps = (state) => {
   return ({
-    user: state.login.user // state.user in login reducer
+    user: state.login.user, // state.user in login reducer
+    token: state.login.token,
   });
 };
 

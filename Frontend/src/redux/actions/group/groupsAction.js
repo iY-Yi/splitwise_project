@@ -4,10 +4,10 @@ import {
   GET_GROUPS, LEAVE_GROUP_SUCCESS, LEAVE_GROUP_FAIL, ACCEPT_INVITE_SUCCESS, ACCEPT_INVITE_FAIL,
 } from '../types';
 
-export const getGroups = () => (dispatch) => {
+export const getGroups = (userId) => (dispatch) => {
   axios.get('/group/all', {
     params: {
-      user: cookie.load('id'),
+      user: userId,
     },
   })
     .then((Response) => dispatch({

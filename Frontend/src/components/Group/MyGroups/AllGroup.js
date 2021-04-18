@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import { getGroups } from '../../../redux/actions/group/groupsAction';
 import Invites from './Invites';
 import GroupList from './GroupList';
+import { Link } from 'react-router-dom';
 
 class AllGroup extends Component {
   constructor(props) {
@@ -14,7 +15,8 @@ class AllGroup extends Component {
   }
 
   componentDidMount() {
-    this.props.getGroups();
+    const userId = this.props.user._id;
+    this.props.getGroups(userId);
   }
 
   render() {
@@ -25,8 +27,7 @@ class AllGroup extends Component {
     return (
       <div className="container-fluid">
         <h3>My Groups</h3>
-
-        <a className="btn btn-info" href="/group/new">New Group</a>
+        <Link to="/group/new" className="btn btn-info">New Group</Link>
         <br />
         <br />
         <Invites />
@@ -38,6 +39,11 @@ class AllGroup extends Component {
 
 AllGroup.propTypes = {
   getGroups: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
 };
 
-export default connect(null, { getGroups })(AllGroup);
+const mapStateToProps = state => ({
+  user: state.login.user,
+});
+
+export default connect(mapStateToProps, { getGroups })(AllGroup);
