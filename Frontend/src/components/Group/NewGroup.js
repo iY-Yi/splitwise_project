@@ -2,39 +2,61 @@ import Axios from 'axios';
 import React, {Component} from 'react';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
-
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { getUserList, newGroup, sendInvite } from '../../redux/actions/group/newGroupAction';
+import { getCurrentUser } from '../../utils/utils';
 
 class NewGroup extends Component{
-  state = {
-    name: '',
-    image: '/default.jpg',
-    saveStatus: null,
-    fileSelected: '',
-    users: [],
-    creator: cookie.load('user'),
-    // members: [],
-    search: '',
-    message: '',
-    inviteMsg: '',
-  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: '',
+      image: '/default.jpg',
+      fileSelected: '',
+      search: '',
+    };
+    this.handleChange = this.handleChange.bind(this);
+    this.handleFileSelect = this.handleFileSelect.bind(this);
+    this.submitSave = this.submitSave.bind(this);
+    this.searchUser = this.searchUser.bind(this);
+    this.inviteUser = this.inviteUser.bind(this);
+  }
+
+  // state = {
+  //   name: '',
+  //   image: '/default.jpg',
+  //   saveStatus: null,
+  //   fileSelected: '',
+  //   users: [],
+  //   creator: cookie.load('user'),
+  //   // members: [],
+  //   search: '',
+  //   message: '',
+  //   inviteMsg: '',
+  // };
 
   //get all users from backend  
   componentDidMount(){
-    Axios.get('/group/new')
-      .then((response) => {
-        //update the state with the response data
-        this.setState({
-          users : this.state.users.concat(response.data) 
-        })
-      })
-      .catch((e) => {
-        this.setState({ message: 'Loading failed!'});
-      });
+    this.props.getUserList();
   }
+  //   Axios.get('/group/new')
+  //     .then((response) => {
+  //       //update the state with the response data
+  //       this.setState({
+  //         users : this.state.users.concat(response.data) 
+  //       })
+  //     })
+  //     .catch((e) => {
+  //       this.setState({ message: 'Loading failed!'});
+  //     });
+  // }
 
   handleChange = (e) => {
-    const { name, value} = e.target;
-    this.setState({ name: value});
+    this.setState({
+      [e.target.name]: e.target.value
+    })
   }
 
   handleFileSelect = event => {
@@ -48,26 +70,26 @@ class NewGroup extends Component{
   }
 
   inviteUser = (e) => {
-    this.setState({
-      inviteMsg : ''});    
+    this.setState({ inviteMsg : ''});    
     const inviteData= {
       groupName: this.state.name,
       user: e.target.value,
-      accepted: 0,
-      requestor: cookie.load('id'),
+      requestor: getCurrentUser(),
     }
-    Axios.post('/group/invite', inviteData)
-    .then((response)=>{
-      this.setState({
-        inviteMsg : 'The user is invited.'});
-    })
-    .catch((err) => {
-      console.log(err);
-      this.setState({
-        inviteMsg: 'Failed! Unauthorized',
-      })
-    });
+    this.props.sendInvite(inviteData);
   }
+  //   Axios.post('/group/invite', inviteData)
+  //   .then((response)=>{
+  //     this.setState({
+  //       inviteMsg : 'The user is invited.'});
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //     this.setState({
+  //       inviteMsg: 'Failed! Unauthorized',
+  //     })
+  //   });
+  // }
 
   submitSave = async(e) => {
     e.preventDefault();
@@ -84,26 +106,31 @@ class NewGroup extends Component{
       name: this.state.name,
       image: this.state.image,
       fileSelected: this.state.fileSelected,
-      creator: cookie.load('id'),
+      creator: getCurrentUser(),
       // members: this.state.members,     
     }
-    try {
-      const response = await Axios.post("/group/new", group)
-      console.log("Group created: ", response.status);
-      this.setState({ saveStatus: true,
-        message : 'New group is created.'});
-      }
-    catch (e) {
-      console.log(e);
-      this.setState({saveStatus: false, message: 'Failed! Duplicate_Name', });
-    }
+    this.props.newGroup(group);
   }
+  //   try {
+  //     const response = await Axios.post("/group/new", group)
+  //     console.log("Group created: ", response.status);
+  //     this.setState({ saveStatus: true,
+  //       message : 'New group is created.'});
+  //     }
+  //   catch (e) {
+  //     console.log(e);
+  //     this.setState({saveStatus: false, message: 'Failed! Duplicate_Name', });
+  //   }
+  // }
 
   render(){
     if (!cookie.load('user')) {
       return <Redirect to="/landing" />;
     }
-    let searchMembers = this.state.users.filter((data) => {
+
+    const usersArray = Array.from(this.props.users);
+    console.log(usersArray);
+    let searchMembers = usersArray.filter((data) => {
       if (this.state.search !== '' && (data.name.toLowerCase().includes(this.state.search.toLowerCase()) ||
       data.email.toLowerCase().includes(this.state.search.toLowerCase()))){
         return data;
@@ -120,6 +147,15 @@ class NewGroup extends Component{
       )
     });
 
+    let message = '';
+    let saved = false;
+    if (this.props.group.error) {
+      message = `FAIL: ${this.props.group.error}`;
+    }
+    else if (this.props.group.message) {
+      saved = true;
+    }
+
     return(
       <div className="container-fluid">
         <h3>GROUP</h3>
@@ -135,17 +171,17 @@ class NewGroup extends Component{
           <div className="col-md-8">
             <form>
               <label>Group Name</label><br/>
-              <input className="form-control" type="text" id="name" name="name" value={this.state.name} onChange={this.handleChange} disabled={this.state.saveStatus}/><br/>
+              <input className="form-control" type="text" id="name" name="name" value={this.state.name} onChange={this.handleChange} disabled={saved}/><br/>
               <input type = "Button" value = "Save" readOnly className="btn btn-success btn-lg" onClick={this.submitSave}/>
               <br />
-              { this.state.message!=='' && <div className="alert alert-info">{this.state.message}</div>}
+              { message!=='' && <div className="alert alert-info">{message}</div>}
               <br />
               <h4>Invite User</h4>
-              { this.state.inviteMsg!=='' && <div className="alert alert-info">{this.state.inviteMsg}</div>}
+              {/* { this.state.inviteMsg!=='' && <div className="alert alert-info">{this.state.inviteMsg}</div>} */}
               <input type="text" className="form-control" placeholder="Enter to search for a user" onChange={(e)=>this.searchUser(e)} />
               <table className="table">
                 <tbody>
-                {searchMembers}
+                {this.props.users.length > 0 ? searchMembers : <p />}
                 </tbody>
               </table>
             </form>
@@ -158,4 +194,17 @@ class NewGroup extends Component{
   }
 }
 
-export default NewGroup;
+NewGroup.propTypes = {
+  getUserList: PropTypes.func.isRequired,
+  newGroup: PropTypes.func.isRequired,
+  sendInvite: PropTypes.func.isRequired,
+  users: PropTypes.object.isRequired,
+  group: PropTypes.object.isRequired,
+};
+
+const mapStateToProps = state => ({
+  users: state.newGroup.users,
+  group: state.newGroup.group,
+});
+
+export default connect(mapStateToProps, { getUserList, newGroup, sendInvite })(NewGroup);

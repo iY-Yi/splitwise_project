@@ -20,36 +20,6 @@ class Profile extends Component{
     this.handleFileSelect = this.handleFileSelect.bind(this);
     this.submitSave = this.submitSave.bind(this);
   }
-  // state = {
-  //   user: {
-
-  //   },
-  //   name: '',
-  //   email: '',
-  //   phone: '',
-  //   avatar: '',
-  //   currency: '',
-  //   timezone: '',
-  //   language: '',    
-  //   error: '',
-  //   fileSelected: '',
-  //   saveStatus: null,
-  //   disabled: true,
-  // };
-
-  // componentDidMount(){
-  //   const email = cookie.load('user');
-  //   // console.log(id);
-  //   // Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
-  //   Axios.get(`/user/profile/${email}`)
-  //   .then((response) => {
-  //     this.setState({ user : response.data, error: '', });
-  //     // console.log(this.state);
-  //   })
-  //   .catch((err) => {
-  //     this.setState({error: 'Profile loading failed.'});
-  //   });
-  // }
 
   componentWillMount() {
     this.props.getUser();

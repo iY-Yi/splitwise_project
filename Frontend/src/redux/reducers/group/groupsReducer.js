@@ -1,10 +1,10 @@
 import {
-  GET_GROUPS, LEAVE_GROUP, GET_INVITES, ACCEPT_INVITE,
+  GET_GROUPS, LEAVE_GROUP_FAIL, LEAVE_GROUP_SUCCESS, ACCEPT_INVITE_SUCCESS, ACCEPT_INVITE_FAIL,
 } from '../../actions/types';
 
 const initialState = {
-  groups: {},
-  invites: {},
+  groups: [],
+  invites: [],
 };
 
 function groupsReducer(state = initialState, action) {
@@ -16,20 +16,28 @@ function groupsReducer(state = initialState, action) {
         groups: action.payload.groups, // add user to state
         invites: action.payload.invites,
       };
-    case LEAVE_GROUP:
+    case LEAVE_GROUP_FAIL:
+      alert(`FAIL: ${action.payload.error}`);
+      return { ...state };
+
+    case LEAVE_GROUP_SUCCESS:
+      console.log(state);
       return {
         ...state,
         groups: action.payload,
       };
-    case GET_INVITES:
+
+    case ACCEPT_INVITE_FAIL:
+      // console.log(action.playload);
+      alert(`FAIL: ${action.payload}`);
+      // return { ...state };
+      return { ...state };
+
+    case ACCEPT_INVITE_SUCCESS:
       return {
         ...state,
-        invites: action.payload,
-      };
-    case ACCEPT_INVITE:
-      return {
-        ...state,
-        invites: action.payload,
+        groups: action.payload.groups,
+        invites: action.payload.invites,
       };
     default:
       return state;

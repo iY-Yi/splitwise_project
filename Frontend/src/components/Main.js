@@ -4,7 +4,7 @@ import Signup from './User/Signup';
 import Login from './User/Login';
 import Profile from './User/Profile';
 import NewGroup from './Group/NewGroup';
-import AllGroup from './Group/AllGroup';
+import AllGroup from './Group/MyGroups/AllGroup';
 import Expense from './Group/Expense';
 import Navbar from './LandingPage/Navbar';
 import Landing from './LandingPage/Landing';

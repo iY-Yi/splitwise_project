@@ -1,37 +1,33 @@
 import axios from 'axios';
-import cookie from 'react-cookies';
+// import cookie from 'react-cookies';
 import {
-  GET_GROUPS, LEAVE_GROUP_SUCCESS, LEAVE_GROUP_FAIL, ACCEPT_INVITE_SUCCESS, ACCEPT_INVITE_FAIL,
+  NEW_GROUP, GET_USER_LIST_SUCCESS, GET_USER_LIST_FAIL, SEND_INVITE,
 } from '../types';
 
-export const getGroups = () => (dispatch) => {
-  axios.get('/group/all', {
-    params: {
-      user: cookie.load('id'),
-    },
-  })
+export const getUserList = () => (dispatch) => {
+  axios.get('/group/userlist')
     .then((Response) => dispatch({
-      type: GET_GROUPS,
+      type: GET_USER_LIST_SUCCESS,
       payload: Response.data,
     }))
     .catch((error) => {
       console.log(error);
       if (error.response && error.response.data) {
         return dispatch({
-          type: GET_GROUPS,
+          type: GET_USER_LIST_FAIL,
           payload: error.response.data,
         });
       }
     });
 };
 
-export const leaveGroup = (data) => (dispatch) => {
+export const newGroup = (data) => (dispatch) => {
   // axios.defaults.headers.common.authorization = localStorage.getItem('token');
-  axios.post('/group/leave', data)
+  axios.post('/group/new', data)
     .then((Response) => {
       // console.log(Response);
       dispatch({
-        type: LEAVE_GROUP_SUCCESS,
+        type: NEW_GROUP,
         payload: Response.data,
       });
     })
@@ -39,29 +35,28 @@ export const leaveGroup = (data) => (dispatch) => {
       // console.log(error.response);
       if (error.response && error.response.data) {
         return dispatch({
-          type: LEAVE_GROUP_FAIL,
+          type: NEW_GROUP,
           payload: error.response.data,
         });
       }
     });
 };
 
-export const acceptInvite = (data) => (dispatch) => {
-  console.log(data);
+export const sendInvite = (data) => (dispatch) => {
   // axios.defaults.headers.common.authorization = localStorage.getItem('token');
-  axios.post('/group/accept', data)
+  axios.post('/group/invite', data)
     .then((Response) => {
-      console.log(Response);
+      // console.log(Response);
       dispatch({
-        type: ACCEPT_INVITE_SUCCESS,
+        type: SEND_INVITE,
         payload: Response.data,
       });
     })
     .catch((error) => {
-      console.log(error.response);
+      // console.log(error.response);
       if (error.response && error.response.data) {
         return dispatch({
-          type: ACCEPT_INVITE_FAIL,
+          type: SEND_INVITE,
           payload: error.response.data,
         });
       }

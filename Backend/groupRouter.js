@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const mongoose = require('mongoose');
-const { Sequelize, Op } = require('sequelize');
+// const { Sequelize, Op } = require('sequelize');
 const {
   User, Group, Expense, Balance,
 } = require('./db_models');
@@ -10,7 +10,7 @@ const { checkAuth } = require('./Utils/passport');
 const groupRouter = express.Router();
 
 // send all users to NewGroup page
-groupRouter.get('/new', (req, res) => {
+groupRouter.get('/userlist', (req, res) => {
   // res.end(JSON.stringify(books));
   (async () => {
     try {
@@ -18,7 +18,7 @@ groupRouter.get('/new', (req, res) => {
       // console.log(users);
       res.status(200).end(JSON.stringify(users));
     } catch (e) {
-      res.status(400).end();
+      res.status(400).send({ error: 'LOADING_FAIL' });
     }
   })();
 });
@@ -47,18 +47,13 @@ groupRouter.post('/upload', (req, res) => {
 
 // create new group
 groupRouter.post('/new', (req, res) => {
-  req.body.count = 1;
-  console.log(req.body);
+  // console.log(req.body);
   // let groupId;
 
   Group.findOne({ name: req.body.name })
     .then((existGroup) => {
       if (existGroup) {
-        res.status(400).send({
-          errors: {
-            body: 'GROUP_EXISTS',
-          },
-        });
+        res.status(400).send({ error: 'GROUP_EXISTS' });
       }
       const newGroup = new Group({
         name: req.body.name,
@@ -75,11 +70,11 @@ groupRouter.post('/new', (req, res) => {
         { $push: { groups: group._id } });
     })
     .then(() => {
-      res.status(200).end();
+      res.status(200).send({ message: 'SUCCESS' });
     })
     .catch((err) => {
       console.log(err);
-      res.status(500).send(JSON.stringify(err));
+      res.status(500).send({ error: 'NEW_GROUP_FAIL' });
     });
 });
 
@@ -92,17 +87,13 @@ groupRouter.post('/invite', (req, res) => {
         console.log('Authorized');
         return group._id;
       }
-      res.status(400).send({
-        errors: {
-          body: 'NOT_AUTHORIZED',
-        },
-      });
+      res.status(400).send({ error: 'NOT_AUTHORIZED' });
     })
     .then((groupId) => User.update({ _id: req.body.user },
       { $addToSet: { invites: groupId } }))
-    .then(() => res.status(200).end())
+    .then(() => res.status(200).send({ message: 'SUCCESS' }))
     .catch((err) => {
-      res.status(400).send(JSON.stringify(err));
+      res.status(400).send({ error: 'INVITE_FAIL' });
     });
 });
 
@@ -146,35 +137,45 @@ groupRouter.post('/leave', (req, res) => {
       data.map((balance) => {
         if (balance.total !== 0) {
           throw new Error('OPEN_BALANCE');
+          // res.status(400).send({ error: 'FAIL: OPEN_BALANCE' });
         }
       });
     })
-    .then(() => User.update({ _id: user }, { $pull: { groups: group } }))
     .then(() => Group.update({ _id: group }, { $pull: { users: user } }))
-    .then(() => {
-      res.status(200).end();
+    .then(() => User.findOneAndUpdate({ _id: user }, { $pull: { groups: group } }, { returnOriginal: false }).populate('groups'))
+    .then((updatedUser) => {
+      console.log(updatedUser);
+      res.status(200).send(updatedUser.groups);
     })
     .catch((err) => {
       console.log(err);
-      res.status(400).send(err);
+      res.status(400).send({ error: 'OPEN_BALANCE' });
     });
 });
 
 // Accept group invite
-groupRouter.put('/accept', (req, res) => {
+groupRouter.post('/accept', (req, res) => {
   const groupId = req.body.group;
   const userId = req.body.user;
+  console.log(req.body);
 
-  Group.update({ _id: groupId },
-    { $addToSet: { users: userId } })
-    .then(() => User.update({ _id: userId },
-      { $addToSet: { groups: groupId }, $pull: { invites: groupId } }))
-    .then(() => {
-      res.status(200).end();
-    })
-    .catch((err) => {
-      res.status(400).send(err);
-    });
+  (async () => {
+    try {
+      await Group.update({ _id: groupId },
+        { $addToSet: { users: userId } });
+      const updatedUser = await User.findOneAndUpdate({ _id: userId }, {
+        $addToSet: { groups: groupId },
+        $pull: { invites: { $in: [groupId, null] } },
+      }, { returnOriginal: false })
+        .populate('invites')
+        .populate('groups');
+
+      res.status(200).send(updatedUser);
+    } catch (e) {
+      console.log(e);
+      res.status(400).send('ACCEPT_INVITE_FAIL');
+    }
+  })();
 });
 
 groupRouter.get('/expense/:group', (req, res) => {
@@ -318,6 +319,5 @@ groupRouter.post('/expense/deleteComment', (req, res) => {
     }
   })();
 });
-
 
 module.exports = groupRouter;
