@@ -2,9 +2,12 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router';
 import cookie from 'react-cookies';
 
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+
 class Landing extends Component {
   render() {
-    if (cookie.load('user')) {
+    if (this.props && this.props.user && this.props.user._id) {
       return <Redirect to="/dashboard" />;
     }
     return (
@@ -17,4 +20,12 @@ class Landing extends Component {
   }
 }
 
-export default Landing;
+Landing.propTypes = {
+  user: PropTypes.object.isRequired,
+};
+
+const mapStateToProps = state => ({
+  user: state.login.user,
+});
+
+export default connect(mapStateToProps, {})(Landing);

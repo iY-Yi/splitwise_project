@@ -1,5 +1,5 @@
 import axios from 'axios';
-import cookie from 'react-cookies';
+// import cookie from 'react-cookies';
 import {
   GET_GROUPS, LEAVE_GROUP_SUCCESS, LEAVE_GROUP_FAIL, ACCEPT_INVITE_SUCCESS, ACCEPT_INVITE_FAIL,
 } from '../types';

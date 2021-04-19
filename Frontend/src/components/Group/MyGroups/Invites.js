@@ -1,6 +1,4 @@
-import Axios from 'axios';
 import React, {Component} from 'react';
-import cookie from 'react-cookies';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { acceptInvite } from '../../../redux/actions/group/groupsAction';

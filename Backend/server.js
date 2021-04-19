@@ -182,7 +182,7 @@ app.get('/dashboard', checkAuth, (req, res) => {
         owes, owed, details,
       });
     } catch (err) {
-      res.status(400).end();
+      res.status(400).send({ error: 'LOADING_FAIL' });
     }
   })();
 });
@@ -196,9 +196,9 @@ app.post('/settle', checkAuth, (req, res) => {
     try {
       await Balance.updateMany({ user1: mongoose.Types.ObjectId(user), user2: mongoose.Types.ObjectId(user2) }, { $set: { clear: true } });
       await Balance.updateMany({ user1: mongoose.Types.ObjectId(user2), user2: mongoose.Types.ObjectId(user) }, { $set: { clear: true } });
-      res.status(200).end();
+      res.status(200).send();
     } catch (e) {
-      res.status(400).end();
+      res.status(400).send({ error: 'SETTLE_FAIL' });
     }
   })();
 });
@@ -224,10 +224,10 @@ app.get('/activity', (req, res) => {
       // console.log(activities);
       res.status(200).send({
         activities,
-        groupNames,
+        groups: groupNames,
       });
     } catch (e) {
-      res.status(400).end();
+      res.status(400).send({ error: 'LOAD_ACTIVITY_FAIL' });
     }
   })();
 });

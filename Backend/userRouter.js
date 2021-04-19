@@ -45,7 +45,18 @@ userRouter.post('/signup', (req, res) => {
 
               const payload = { _id: savedUser._id, name: savedUser.name };
               const token = jwt.sign(payload, secret, { expiresIn: 86400000 }); // 100800 30 min
-              const data = { savedUser, token: `JWT ${token}` };
+
+              const storedUser = {
+                _id: savedUser._id,
+                name: savedUser.name,
+                email: savedUser.email,
+                avatar: savedUser.avatar,
+                language: savedUser.language,
+                currency: savedUser.currency,
+                timezone: savedUser.timezone,
+                phone: savedUser.phone,
+              };
+              const data = { user: storedUser, token: `JWT ${token}` };
               res.status(200).end(JSON.stringify(data));
             });
         } catch (err) {
@@ -70,7 +81,19 @@ userRouter.post('/login', (req, res) => {
 
             const payload = { _id: user._id, name: user.name };
             const token = jwt.sign(payload, secret, { expiresIn: 86400000 }); // 100800 30 min
-            const data = { user, token: `JWT ${token}` };
+
+            const storedUser = {
+              _id: user._id,
+              name: user.name,
+              email: user.email,
+              avatar: user.avatar,
+              language: user.language,
+              currency: user.currency,
+              timezone: user.timezone,
+              phone: user.phone,
+            };
+
+            const data = { user: storedUser, token: `JWT ${token}` };
             // console.log(user);
             // res.status(200).end(`JWT${token}`);
             res.status(200).end(JSON.stringify(data));
@@ -138,7 +161,19 @@ userRouter.post('/update', checkAuth, (req, res) => {
       // console.log(user);
       res.cookie('currency', req.body.currency, { maxAge: 86400000, httpOnly: false, path: '/' });
       res.cookie('timezone', req.body.timezone, { maxAge: 86400000, httpOnly: false, path: '/' });
-      res.status(200).end(JSON.stringify(user));
+
+      const storedUser = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        language: user.language,
+        currency: user.currency,
+        timezone: user.timezone,
+        phone: user.phone,
+      };
+
+      res.status(200).end(JSON.stringify(storedUser));
     })
     .catch((e) => {
       res.status(400).end(JSON.stringify(e));

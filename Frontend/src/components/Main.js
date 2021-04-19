@@ -5,7 +5,7 @@ import Login from './User/Login';
 import Profile from './User/Profile';
 import NewGroup from './Group/NewGroup';
 import AllGroup from './Group/MyGroups/AllGroup';
-import Expense from './Group/Expense';
+import Expense from './Group/GroupExpense/Expense';
 import Navigationbar from './LandingPage/Navbar';
 import Landing from './LandingPage/Landing';
 import Dashboard from './Dashboard/Dashboard';

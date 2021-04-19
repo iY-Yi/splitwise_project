@@ -1,18 +1,17 @@
-import Axios from 'axios';
 import React, { Component } from 'react';
-import cookie from 'react-cookies';
 import numeral from 'numeral';
 import { Redirect } from 'react-router';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { getActivity } from '../../redux/actions/activityAction';
 
 class Activity extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      activities: [],
-      groups: [],
+
       filterGroup: '',
       sort: '',
-      message: '',
       currentPage: 1,
       pageSize: 2,
       // entryCount: 1,
@@ -22,27 +21,7 @@ class Activity extends Component {
 
   // get all users from backend
   componentDidMount() {
-    const { group } = this.state;
-    // console.log(group);
-    Axios.get('/activity', {
-      params: {
-        user: cookie.load('id'),
-        timezone: cookie.load('timezone'),
-      },
-    })
-      .then((response) => {
-        // update the state with the response data
-        // console.log(response.data.balances);
-        this.setState({
-          activities: response.data.activities,
-          groups: response.data.groupNames,
-          sort: 'desc',
-          // maxPage: Math.ceil(response.data.activities.length / this.state.pageSize),
-        });
-      })
-      .catch((err) => {
-        this.setState({ message: 'Loading_Failed' });
-      });
+    this.props.getActivity(this.props.user._id);
   }
 
   handleChange = (e) => {
@@ -67,11 +46,11 @@ class Activity extends Component {
   }
 
   render() {
-    if (!cookie.load('user')) {
+    if (!this.props || !this.props.user || !this.props.user._id) {
       return <Redirect to="/landing" />;
     }    
-    const currency = cookie.load('currency');
-    const groupList = this.state.groups.map((group) => (
+    const currency = this.props.user.currency;
+    const groupList = this.props.groups.map((group) => (
       <option value={group}>{group}</option>
     ));
     
@@ -79,10 +58,10 @@ class Activity extends Component {
     const indexOfLast = currentPage * pageSize;
     const indexOfFirst = indexOfLast - pageSize;
 
-    console.log(indexOfFirst);
-    console.log(indexOfLast);
+    // console.log(indexOfFirst);
+    // console.log(indexOfLast);
 
-    const activityList = this.state.activities.filter((data) => {
+    const activityList = this.props.activities.filter((data) => {
       if (data.group.name.includes(this.state.filterGroup)) {
         return data;
       }
@@ -108,7 +87,7 @@ class Activity extends Component {
     ));
 
     const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(this.state.activities.length / this.state.pageSize); i++) {
+    for (let i = 1; i <= Math.ceil(this.props.activities.length / this.state.pageSize); i++) {
       pageNumbers.push(i);
     }
 
@@ -129,7 +108,7 @@ class Activity extends Component {
         <h3>
           Recent activity
         </h3>
-        { this.state.message !== '' && <div className="alert alert-info">{this.state.message}</div>}
+        { this.props.message !== '' && <div className="alert alert-info">{this.props.message}</div>}
         <br />
         <div className="row">
           <div className="col-sm-2">
@@ -163,7 +142,7 @@ class Activity extends Component {
 
         </div>
         <br />
-        { this.state.activities.length === 0 && <div className="alert alert-info">No activities.</div>}
+        { this.props.activities.length === 0 && <div className="alert alert-info">No activities.</div>}
           <table className="table">
             <tbody>
               {activityList}
@@ -178,4 +157,20 @@ class Activity extends Component {
   }
 }
 
-export default Activity;
+Activity.propTypes = {
+  getActivity: PropTypes.func.isRequired,
+  activities: PropTypes.object.isRequired,
+  groups: PropTypes.object.isRequired,
+  message: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
+};
+
+const mapStateToProps = state => ({
+  activities: state.activity.activities,
+  groups: state.activity.groups,
+  message: state.activity.message,
+  user: state.login.user,
+});
+
+export default connect(mapStateToProps, { getActivity })(Activity);
+

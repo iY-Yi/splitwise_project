@@ -165,7 +165,7 @@ groupRouter.post('/accept', (req, res) => {
         { $addToSet: { users: userId } });
       const updatedUser = await User.findOneAndUpdate({ _id: userId }, {
         $addToSet: { groups: groupId },
-        $pull: { invites: { $in: [groupId, null] } },
+        $pull: { invites: groupId },
       }, { returnOriginal: false })
         .populate('invites')
         .populate('groups');
@@ -178,6 +178,7 @@ groupRouter.post('/accept', (req, res) => {
   })();
 });
 
+// get group expense list
 groupRouter.get('/expense/:group', (req, res) => {
   const { group } = req.params;
   (async () => {
@@ -231,11 +232,12 @@ groupRouter.get('/expense/:group', (req, res) => {
         },
       ]);
       res.status(200).send({
+        group: existGroup,
         expenses,
         balances,
       });
     } catch (err) {
-      res.status(400).send(err);
+      res.status(400).send({ error: 'UNAUTHORIZED' });
     }
   })();
 });
@@ -282,7 +284,7 @@ groupRouter.post('/expense/add', (req, res) => {
 
       res.status(200).end();
     } catch (err) {
-      res.status(400).send(err);
+      res.status(400).send({ error: 'ADD_EXPENSE_FAIL' });
     }
   })();
 });
@@ -296,15 +298,18 @@ groupRouter.post('/expense/addComment', (req, res) => {
       const note = { comment: req.body.comment, userId: req.body.userId, userName: req.body.userName };
       await expense.notes.push(note);
       await expense.save();
-      res.status(200).send(expense);
+      const expenses = await Expense.find({ group: req.body.group })
+        .populate('payor', 'name')
+        .sort('-date');
+      res.status(200).send({ expenses });
     } catch (err) {
       console.log(err);
-      res.status(400).send(err);
+      res.status(400).send({ error: 'ADD_COMMENT_FAIL' });
     }
   })();
 });
 
-// add comment to expense
+// delete expense comment
 groupRouter.post('/expense/deleteComment', (req, res) => {
   // console.log(req.body);
   (async () => {
@@ -312,10 +317,13 @@ groupRouter.post('/expense/deleteComment', (req, res) => {
       const expense = await Expense.findById(req.body.expenseId);
       await expense.notes.id(req.body.commentId).remove();
       await expense.save();
-      res.status(200).send(expense);
+      const expenses = await Expense.find({ group: req.body.group })
+        .populate('payor', 'name')
+        .sort('-date');
+      res.status(200).send({ expenses });
     } catch (err) {
       console.log(err);
-      res.status(400).send(err);
+      res.status(400).send({ error: 'DELETE_COMMENT_FAIL' });
     }
   })();
 });

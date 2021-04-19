@@ -7,6 +7,8 @@ import { connect } from 'react-redux';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 
+import PropTypes from 'prop-types';
+
 // create the Navbar Component
 class Navigationbar extends Component {
   constructor(props){
@@ -28,7 +30,7 @@ class Navigationbar extends Component {
   render() {
     // if Cookie is set render Logout Button
     let navLogin = null;
-    if (cookie.load('user')) {
+    if (this.props.user && this.props.user._id) {
       // console.log('Able to read cookie');
       navLogin = (
         <Navbar bg="light" variant="light">
@@ -71,10 +73,19 @@ class Navigationbar extends Component {
   }
 }
 
+Navigationbar.propTypes = {
+  userLogout: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
+};
+
+const mapStateToProps = state => ({
+  user: state.login.user,
+});
+
 const mapDispatchToProps = dispatch => {
   return {
     userLogout: ()=> dispatch(userLogout())
   }
 }
 
-export default connect(null, mapDispatchToProps)(Navigationbar);
+export default connect(mapStateToProps, {userLogout})(Navigationbar);

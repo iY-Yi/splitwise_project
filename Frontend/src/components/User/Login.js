@@ -30,7 +30,7 @@ class Login extends Component{
   }
 
   render(){
-    if (cookie.load('user')) {
+    if (this.props && this.props.user && this.props.user._id) {
       return <Redirect to="/dashboard" />;
     }
     // // console.log('props:', this.props);
