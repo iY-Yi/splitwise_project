@@ -29,7 +29,7 @@ class Dashboard extends Component {
   selectRow = (e) => {
     this.setState({ userSelected: e.target.value });
   }
-
+  
   settleUp = () => {
     if (this.state.userSelected === '') {
       alert('No balance selected.');  
@@ -43,15 +43,6 @@ class Dashboard extends Component {
       this.props.settle(data);
       this.setState({ userSelected: '' });
       this.componentDidMount();
-      // Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
-      // Axios.post('/settle', data)
-      // .then((response) => {
-      //   this.setState({ message: 'Balance is settled.' });
-      //   this.componentDidMount();
-      // })
-      // .catch((err) => {
-      //   this.setState({ message: 'Balance settle failed!' });
-      // });
     }
   }
 

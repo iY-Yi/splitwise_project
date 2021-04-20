@@ -14,6 +14,7 @@ function groupExpenseReducer(state = initialState, action) {
   // console.log(action.payload);
   switch (action.type) {
     case GET_EXPENSE_SUCCESS:
+      console.log(action.payload.balances);
       return {
         ...state,
         group: action.payload.group, // add user to state
@@ -29,6 +30,8 @@ function groupExpenseReducer(state = initialState, action) {
     case ADD_EXPENSE_SUCCESS:
       return {
         ...state,
+        balances: action.payload.balances,
+        expenses: action.payload.expenses,
         message: '',
       };
     case ADD_EXPENSE_FAIL:

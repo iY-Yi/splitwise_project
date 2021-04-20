@@ -23,7 +23,13 @@ function dashboardReducer(state = initialState, action) {
     case GET_DASHBOARD_FAIL:
       return { ...state, message: action.payload.error };
     case SETTLE_SUCCESS:
-      return state;
+      return {
+        ...state,
+        owes: action.payload.owes, // add user to state
+        owed: action.payload.owed,
+        details: action.payload.details,
+        message: '',
+      };
     case SETTLE_FAIL:
       alert(action.payload.error);
       return state;

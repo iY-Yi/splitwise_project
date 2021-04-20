@@ -30,6 +30,11 @@ export const settle = (data) => (dispatch) => {
   // console.log(userId);
   axios.defaults.headers.common['authorization'] = data.token;
   axios.post('/settle', data)
+    .then(() => axios.get('/dashboard', {
+      params: {
+        user: data.user,
+      },
+    }))
     .then((Response) => dispatch({
       type: SETTLE_SUCCESS,
       payload: Response.data,

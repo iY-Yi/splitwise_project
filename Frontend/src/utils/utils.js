@@ -6,4 +6,9 @@ const getCurrentUser = () => {
   return id;
 };
 
-export { getCurrentUser };
+const dateTimeFormat = (dateString, timezone) => {
+  const d = new Date(dateString);
+  return d.toLocaleString('en-US', { timeZone: timezone });
+};
+
+export { getCurrentUser, dateTimeFormat };

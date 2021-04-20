@@ -30,6 +30,11 @@ export const getExpense = (data) => (dispatch) => {
 export const addExpense = (data) => (dispatch) => {
   // console.log(data);
   axios.post('/group/expense/add', data)
+    .then(() => axios.get(`/group/expense/${data.group}`, {
+      params: {
+        user: data.payor,
+      },
+    }))
     .then((Response) => dispatch({
       type: ADD_EXPENSE_SUCCESS,
       payload: Response.data,

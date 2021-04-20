@@ -191,13 +191,6 @@ groupRouter.get('/expense/:group', (req, res) => {
         .populate('payor', 'name')
         .sort('-date');
 
-      expenses.map((exp) => {
-        exp.date = exp.date.toLocaleString('en-US', { timeZone: req.query.timezone });
-        // console.log(exp.formatDate);
-        // console.log(exp);
-      });
-      // console.log(expenses);
-      // console.log(expenses[0].payor.name);
       const balances = await Balance.aggregate([
         { $match: { $and: [{ clear: false }, { group: mongoose.Types.ObjectId(group) }] } },
         {
@@ -231,6 +224,8 @@ groupRouter.get('/expense/:group', (req, res) => {
           },
         },
       ]);
+      // console.log(balances);
+      // console.log(expenses);
       res.status(200).send({
         group: existGroup,
         expenses,
@@ -281,8 +276,7 @@ groupRouter.post('/expense/add', (req, res) => {
         }
         await Balance.create(data);
       });
-
-      res.status(200).end();
+      res.status(200).send();
     } catch (err) {
       res.status(400).send({ error: 'ADD_EXPENSE_FAIL' });
     }

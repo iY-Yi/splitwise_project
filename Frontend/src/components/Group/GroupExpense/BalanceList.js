@@ -16,7 +16,7 @@ class BalanceList extends Component {
       return <Redirect to="/landing" />;
     }
     const { currency } = this.props.user;
-
+    console.log(this.props.balances);
     const balances = this.props.balances.map((balance) => {
       if (balance.total > 0) {
         return (

@@ -1,16 +1,33 @@
-const express = require('express');
+require('dotenv').config();
 
-const app = express();
-const port = 3001;
+const express = require('express');
+const {kafka} = require('./kafka');
 
 const bodyParser = require('body-parser');
 const session = require('express-session');
 // const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { checkAuth } = require('./Utils/passport');
+const WEB_SERVER = 'http://localhost:3000';
 
-app.set('view engine', 'ejs');
+// app.set('view engine', 'ejs');
 
+let callAndWait = () => {
+  console.log('Kafka client has not connected yet, message will be lost');
+};
+
+(async () => {
+  if (process.env.MOCK_KAFKA === 'false') {
+      const k = await kafka();
+      callAndWait = k.callAndWait;
+  } else {
+      callAndWait = async (fn, ...params) => modules[fn](...params);
+      console.log('Connected to dev kafka. Need to add services.');
+  }
+})();
+
+const app = express();
+app.use(express.json());
 // // use cors to allow cross origin resource sharing
 // app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(cors());
@@ -28,7 +45,7 @@ app.use(bodyParser.json());
 
 // Allow Access Control
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Origin', WEB_SERVER);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers');
@@ -204,24 +221,21 @@ app.post('/settle', checkAuth, (req, res) => {
 });
 
 // display all activities
-app.get('/activity', (req, res) => {
+app.get('/activity', async (req, res) => {
+
+  // console.log(req.query.user);
+  // const { activities, groupNames, error } = await callAndWait('getActivity', req.query.user);
+  // res.status(200).send({ activities, groups: groupNames, });
+
   (async () => {
     try {
       let groups = await User.findById(req.query.user, 'groups').populate('groups', 'name');
       groups = groups.groups;
       const groupNames = groups.map((group) => group.name);
       const groupIds = groups.map((group) => group._id);
-      // console.log(groupNames);
 
       const activities = await Expense.find({ group: { $in: groupIds } })
         .populate('group', 'name').populate('payor', 'name').sort('-date');
-      // console.log(activities);
-
-      // activities.map((act) => {
-      //   console.log(act.date.toLocaleString('en-US', { timeZone: req.query.timezone }));
-      //   // act.date = act.date.toLocaleString('en-US', { timeZone: req.query.timezone });
-      // });
-      // console.log(activities);
       res.status(200).send({
         activities,
         groups: groupNames,
@@ -244,6 +258,12 @@ app.get('/error', (req, res, next) => {
   }
 });
 
+app.post('/sum', async (req, res) => {
+  console.log(req.body);
+  const sum = await callAndWait('sum', req.body.a, req.body.b);
+  res.status(200).send({sum});
+})
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
@@ -251,4 +271,4 @@ app.use((err, req, res, next) => {
 
 module.exports = app;
 
-app.listen(port, () => console.log(`Backend server listening on port ${port}!`));
+app.listen(parseInt(process.env.PORT), () => console.log(`Backend server listening on port ${process.env.PORT}!`));

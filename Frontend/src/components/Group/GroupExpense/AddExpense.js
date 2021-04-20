@@ -24,14 +24,16 @@ class AddExpense extends Component {
       description: this.state.description,
       amount: this.state.amount,
       payor: this.props.user._id,
+      // groupId : this.props.group._id,
+      // userId : this.props.user._id,
     }
     this.props.addExpense(data);
 
-    const groupInfo = {
-      groupId : this.props.group._id,
-      userId : this.props.user._id,
-    }
-    this.props.getExpense(groupInfo);
+    // const groupInfo = {
+    //   groupId : this.props.group._id,
+    //   userId : this.props.user._id,
+    // }
+    // this.props.getExpense(groupInfo);
     
     this.setState({
       description: '',

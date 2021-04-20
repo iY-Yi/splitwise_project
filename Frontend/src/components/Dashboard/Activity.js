@@ -4,6 +4,7 @@ import { Redirect } from 'react-router';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { getActivity } from '../../redux/actions/activityAction';
+import { dateTimeFormat } from '../../utils/utils';
 
 class Activity extends Component {
   constructor(props) {
@@ -50,18 +51,16 @@ class Activity extends Component {
       return <Redirect to="/landing" />;
     }    
     const currency = this.props.user.currency;
+    const timezone = this.props.user.timezone;
+
     const groupList = this.props.groups.map((group) => (
       <option value={group}>{group}</option>
     ));
     
-    const {currentPage, pageSize} = this.state;
-    const indexOfLast = currentPage * pageSize;
-    const indexOfFirst = indexOfLast - pageSize;
-
     // console.log(indexOfFirst);
     // console.log(indexOfLast);
 
-    const activityList = this.props.activities.filter((data) => {
+    const filteredList = this.props.activities.filter((data) => {
       if (data.group.name.includes(this.state.filterGroup)) {
         return data;
       }
@@ -77,17 +76,23 @@ class Activity extends Component {
         if (b.date > a.date) return 1;
         return 0;          
       }
-    })
-    .slice(indexOfFirst, indexOfLast)
+    });
+
+    const {currentPage, pageSize} = this.state;
+    const indexOfLast = currentPage * pageSize;
+    const indexOfFirst = indexOfLast - pageSize;
+
+    const activityList = filteredList.slice(indexOfFirst, indexOfLast)
     .map((activity) => (
       <tr>
-        <td>{activity.date}</td>
+        {/* <td>{ new Date(activity.date)}</td> */}
+        <td>{dateTimeFormat(activity.date, timezone)}</td>
         <td>{activity.payor.name} paid {numeral(activity.amount).format('0,0.00')} {currency} for {activity.description} in group {activity.group.name}</td>
       </tr>
     ));
 
     const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(this.props.activities.length / this.state.pageSize); i++) {
+    for (let i = 1; i <= Math.ceil(filteredList.length / this.state.pageSize); i++) {
       pageNumbers.push(i);
     }
 

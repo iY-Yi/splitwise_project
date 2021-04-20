@@ -3,6 +3,7 @@ import numeral from 'numeral';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { addComment, deleteComment, } from '../../../redux/actions/group/expenseGroupAction';
+import { dateTimeFormat } from '../../../utils/utils';
 
 class ExpenseList extends Component {
   constructor(props) {
@@ -56,11 +57,13 @@ class ExpenseList extends Component {
 
   render() {
     const currency = this.props.user.currency;
+    const timezone = this.props.user.timezone;
     console.log(this.props.expenses);
     let expenses = this.props.expenses.map((expense, index) => {
       return(
           <tr>
-            <td>{expense.date}</td>
+            {/* <td>{expense.date}</td> */}
+            <td>{dateTimeFormat(expense.date, timezone)}</td>
             <td>{expense.description}</td>
             <td>{expense.payor.name} paid</td>
             <td>{numeral(expense.amount).format('0,0.00')} {currency}</td>
