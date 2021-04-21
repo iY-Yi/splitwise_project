@@ -2,6 +2,16 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+// Sequelize connection, TO DELETE
+// const { Sequelize, DataTypes } = require('sequelize');
+// const config = require('./config');
+
+// const sequelize = new Sequelize(config.database, config.username, config.password, {
+//   host: config.host,
+//   dialect: 'mysql',
+//   logging: false, // disable logging; defailt: console.log
+// });
+
 const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
   name: { type: String },

@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { kafka, topics } = require('./kafka');
-const modules = require('./modules');
+const modules = require('./services/modules');
 
 (async () => {
     const k = await kafka();

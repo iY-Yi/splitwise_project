@@ -1,22 +1,15 @@
 {
   "name": "splitwise",
-  "description": "CMPE 273 lab 1",
-  "main": "server.js",
+  "description": "CMPE 273 lab 2 Kafka Backend",
+  "main": "kafkaServer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
     "body-parser": "^1.19.0",
-    "chai": "^4.3.4",
-    "chai-http": "^4.3.0",
     "chalk": "^3.0.0",
-    "cookie-parser": "^1.4.4",
-    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "express-session": "^1.16.2",
-    "jsonwebtoken": "^8.5.1",
     "kafkajs": "^1.15.0",
     "mongoose": "^5.12.3",
     "multer": "^1.4.2",
