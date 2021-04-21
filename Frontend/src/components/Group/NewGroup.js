@@ -94,6 +94,7 @@ class NewGroup extends Component{
       return <Redirect to="/landing" />;
     }
 
+    console.log(this.props);
     const usersArray = Array.from(this.props.users);
     console.log(usersArray);
     let searchMembers = usersArray.filter((data) => {

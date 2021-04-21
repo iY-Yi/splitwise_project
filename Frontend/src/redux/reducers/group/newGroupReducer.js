@@ -14,6 +14,7 @@ function newGroupReducer(state = initialState, action) {
       return {
         ...state,
         users: action.payload,
+        group: {},
       };
 
     case GET_USER_LIST_FAIL:

@@ -1,12 +1,12 @@
 require('dotenv').config();
 
 const express = require('express');
-const { kafka } = require('./kafka');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 // const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const { kafka } = require('./kafka');
 const { checkAuth } = require('./Utils/passport');
 
 const WEB_SERVER = 'http://localhost:3000';
@@ -36,8 +36,12 @@ app.use(cors());
 // use express session to maintain session data
 app.use(session({
   secret: 'cmpe273_splitwise',
-  resave: false, // Forces the session to be saved back to the session store, even if the session was never modified during the request
-  saveUninitialized: false, // Force to save uninitialized session to db. A session is uninitialized when it is new but not modified.
+  // Forces the session to be saved back to the session store, even if the session was
+  // never modified during the request
+  resave: false,
+  // Force to save uninitialized session to db. A session is uninitialized when 
+  // it is new but not modified.
+  saveUninitialized: false,
   duration: 60 * 60 * 1000, // Overall duration of Session : 30 minutes : 1800 seconds
   activeDuration: 5 * 60 * 1000,
 }));
@@ -54,27 +58,27 @@ app.use((req, res, next) => {
   next();
 });
 
-const { mongoDB } = require('./Utils/config');
-const {
-  Expense, User, Balance,
-} = require('./db_models');
+// const { mongoDB } = require('./Utils/config');
+// const {
+//   Expense, User, Balance,
+// } = require('./db_models');
 
-const options = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  poolSize: 50,
-  bufferMaxEntries: 0,
-  useFindAndModify: false,
-};
+// const options = {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+//   poolSize: 50,
+//   bufferMaxEntries: 0,
+//   useFindAndModify: false,
+// };
 
-mongoose.connect(mongoDB, options, (err, res) => {
-  if (err) {
-    console.log(err);
-    console.log('MongoDB Connection Failed');
-  } else {
-    console.log('MongoDB Connected');
-  }
-});
+// mongoose.connect(mongoDB, options, (err, res) => {
+//   if (err) {
+//     console.log(err);
+//     console.log('MongoDB Connection Failed');
+//   } else {
+//     console.log('MongoDB Connected');
+//   }
+// });
 
 const userRoutes = require('./userRouter');
 const groupRoutes = require('./groupRouter');
@@ -99,7 +103,7 @@ app.get('/dashboard', checkAuth, async (req, res) => {
   } else {
     res.status(200).send({
       owes, owed, details,
-    });    
+    });
   }
 });
 
@@ -107,11 +111,10 @@ app.get('/dashboard', checkAuth, async (req, res) => {
 app.post('/settle', checkAuth, async (req, res) => {
   // console.log(req.body);
   const { user, user2 } = req.body;
-  const { status } = await callAndWait('settleUp', user, user2); 
+  const { status } = await callAndWait('settleUp', user, user2);
   if (status === 200) {
     res.status(200).send();
-  }
-  else {
+  } else {
     res.status(400).send({ error: 'SETTLE_FAIL' });
   }
 });
@@ -122,9 +125,8 @@ app.get('/activity', async (req, res) => {
   const { activities, groups, status } = await callAndWait('getActivity', req.query.user);
   // console.log(status);
   if (status === 200) {
-    res.status(200).send({ activities, groups, });
-  }
-  else {
+    res.status(200).send({ activities, groups });
+  } else {
     res.status(400).send({ error: 'LOAD_ACTIVITY_FAIL' });
   }
 });

@@ -1,7 +1,8 @@
 const express = require('express');
 const multer = require('multer');
 const mongoose = require('mongoose');
-// const { Sequelize, Op } = require('sequelize');
+const modules = require('../Backend-Kafka/services/modules');
+
 const {
   User, Group, Expense, Balance,
 } = require('./db_models');
@@ -9,18 +10,30 @@ const { checkAuth } = require('./Utils/passport');
 
 const groupRouter = express.Router();
 
+let callAndWait = () => {
+  console.log('Kafka client has not connected yet, message will be lost');
+};
+
+(async () => {
+  if (process.env.MOCK_KAFKA === 'false') {
+    const k = await kafka();
+    callAndWait = k.callAndWait;
+  } else {
+    callAndWait = async (fn, ...params) => modules[fn](...params);
+    console.log('Connected to dev kafka. Need to add services.');
+  }
+})();
+
 // send all users to NewGroup page
-groupRouter.get('/userlist', (req, res) => {
-  // res.end(JSON.stringify(books));
-  (async () => {
-    try {
-      const users = await User.find({});
-      // console.log(users);
-      res.status(200).end(JSON.stringify(users));
-    } catch (e) {
-      res.status(400).send({ error: 'LOADING_FAIL' });
-    }
-  })();
+groupRouter.get('/userlist', async (req, res) => {
+  const { status, users } = await callAndWait('getUserList');
+  // console.log(status);
+  if (status === 200) {
+    res.status(200).send( users );
+  }
+  else {
+    res.status(400).send({ error: 'LOADING_FAIL' });
+  }
 });
 
 // upload group image
@@ -46,280 +59,115 @@ groupRouter.post('/upload', (req, res) => {
 });
 
 // create new group
-groupRouter.post('/new', (req, res) => {
-  // console.log(req.body);
-  // let groupId;
-
-  Group.findOne({ name: req.body.name })
-    .then((existGroup) => {
-      if (existGroup) {
-        res.status(400).send({ error: 'GROUP_EXISTS' });
-      }
-      const newGroup = new Group({
-        name: req.body.name,
-        image: req.body.image,
-        users: [mongoose.Types.ObjectId(req.body.creator)],
-      });
-      return newGroup.save();
-    })
-    .then((group) => {
-      console.log(group);
-      // groupId = group._id;
-      const creatorId = mongoose.Types.ObjectId(req.body.creator);
-      return User.update({ _id: creatorId },
-        { $push: { groups: group._id } });
-    })
-    .then(() => {
-      res.status(200).send({ message: 'SUCCESS' });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send({ error: 'NEW_GROUP_FAIL' });
-    });
+groupRouter.post('/new', async (req, res) => {
+  const { status, error } = await callAndWait('newGroup', req.body);
+  if (status === 200) {
+    res.status(200).send({ message: 'SUCCESS' });
+  }
+  else {
+    res.status(400).send({ error });
+  }
 });
 
 // invite user to group
-groupRouter.post('/invite', (req, res) => {
-  console.log(req.body);
-  Group.findOne({ name: req.body.groupName })
-    .then((group) => {
-      if (group && group.users.indexOf(req.body.requestor) >= 0) {
-        console.log('Authorized');
-        return group._id;
-      }
-      res.status(400).send({ error: 'NOT_AUTHORIZED' });
-    })
-    .then((groupId) => User.update({ _id: req.body.user },
-      { $addToSet: { invites: groupId } }))
-    .then(() => res.status(200).send({ message: 'SUCCESS' }))
-    .catch((err) => {
-      res.status(400).send({ error: 'INVITE_FAIL' });
-    });
+groupRouter.post('/invite', async (req, res) => {
+  // console.log(req.body);
+  const { status, error } = await callAndWait('inviteGroup', req.body);
+  if (status === 200) {
+    res.status(200).send({ message: 'SUCCESS' });
+  }
+  else {
+    res.status(400).send({ error });
+  }
 });
 
 // display all groups
-groupRouter.get('/all', (req, res) => {
+groupRouter.get('/all', async (req, res) => {
   const userId = mongoose.Types.ObjectId(req.query.user);
-  (async () => {
-    try {
-      const user = await User.findById(userId)
-        .populate('invites')
-        .populate('groups');
-      // res.status(200).send({ user });
-      res.status(200).end(JSON.stringify(user));
-    } catch (e) {
-      console.log(e);
-      res.status(400).end(JSON.stringify(e));
-    }
-  })();
+  const { status, user } = await callAndWait('getGroupList', userId);
+  if (status === 200) {
+    res.status(200).end(JSON.stringify(user));
+  }
+  else {
+    res.status(400).send({ error: 'GROUPS_LOADING_FAIL' });
+  }
 });
 
 // leave group
-groupRouter.post('/leave', (req, res) => {
-  console.log(req.body);
+groupRouter.post('/leave', async (req, res) => {
+  // console.log(req.body);
   const { group, user } = req.body;
-  Balance.aggregate([
-    {
-      $match: {
-        $and: [{ clear: false }, { group: mongoose.Types.ObjectId(group) },
-          { $or: [{ user1: mongoose.Types.ObjectId(user) }, { user2: mongoose.Types.ObjectId(user) }] }],
-      },
-    },
-    {
-      $group: {
-        _id: { user1: '$user1', user2: '$user2' },
-        total: { $sum: '$owe' },
-      },
-    },
-  ])
-    .then((data) => {
-      console.log(data);
-      data.map((balance) => {
-        if (balance.total !== 0) {
-          throw new Error('OPEN_BALANCE');
-          // res.status(400).send({ error: 'FAIL: OPEN_BALANCE' });
-        }
-      });
-    })
-    .then(() => Group.update({ _id: group }, { $pull: { users: user } }))
-    .then(() => User.findOneAndUpdate({ _id: user }, { $pull: { groups: group } }, { returnOriginal: false }).populate('groups'))
-    .then((updatedUser) => {
-      console.log(updatedUser);
-      res.status(200).send(updatedUser.groups);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(400).send({ error: 'OPEN_BALANCE' });
-    });
+  const { status, updatedUser } = await callAndWait('leaveGroup', user, group);
+  if (status === 200) {
+    res.status(200).send(updatedUser.groups);
+  }
+  else {
+    res.status(400).send({ error: 'OPEN_BALANCE' });
+  }
 });
 
 // Accept group invite
-groupRouter.post('/accept', (req, res) => {
+groupRouter.post('/accept', async (req, res) => {
   const groupId = req.body.group;
   const userId = req.body.user;
-  console.log(req.body);
 
-  (async () => {
-    try {
-      await Group.update({ _id: groupId },
-        { $addToSet: { users: userId } });
-      const updatedUser = await User.findOneAndUpdate({ _id: userId }, {
-        $addToSet: { groups: groupId },
-        $pull: { invites: groupId },
-      }, { returnOriginal: false })
-        .populate('invites')
-        .populate('groups');
-
-      res.status(200).send(updatedUser);
-    } catch (e) {
-      console.log(e);
-      res.status(400).send('ACCEPT_INVITE_FAIL');
-    }
-  })();
+  const { status, updatedUser } = await callAndWait('acceptGroup', userId, groupId);
+  if (status === 200) {
+    res.status(200).send(updatedUser);
+  }
+  else {
+    res.status(400).send('ACCEPT_INVITE_FAIL');
+  }
 });
 
 // get group expense list
-groupRouter.get('/expense/:group', (req, res) => {
+groupRouter.get('/expense/:group', async (req, res) => {
   const { group } = req.params;
-  (async () => {
-    try {
-      const existGroup = await Group.findById(group);
-      if (existGroup === null || existGroup.users.indexOf(req.query.user) < 0) {
-        throw Error('Unauthorized');
-      }
-      const expenses = await Expense.find({ group })
-        .populate('payor', 'name')
-        .sort('-date');
-
-      const balances = await Balance.aggregate([
-        { $match: { $and: [{ clear: false }, { group: mongoose.Types.ObjectId(group) }] } },
-        {
-          $group: {
-            _id: { user1: '$user1', user2: '$user2' },
-            total: { $sum: '$owe' },
-          },
-        },
-        {
-          $project: {
-            user1: '$_id.user1',
-            user2: '$_id.user2',
-            total: 1,
-            _id: 0,
-          },
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'user1',
-            foreignField: '_id',
-            as: 'U1',
-          },
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'user2',
-            foreignField: '_id',
-            as: 'U2',
-          },
-        },
-      ]);
-      // console.log(balances);
-      // console.log(expenses);
-      res.status(200).send({
-        group: existGroup,
-        expenses,
-        balances,
-      });
-    } catch (err) {
-      res.status(400).send({ error: 'UNAUTHORIZED' });
-    }
-  })();
+  const { user } = req.query;
+  const { status, data } = await callAndWait('getGroupExpense', user, group);
+  if (status === 200) {
+    res.status(200).send(data);
+  }
+  else {
+    res.status(400).send({ error: 'UNAUTHORIZED' });
+  }
 });
 
 // add new expense
-groupRouter.post('/expense/add', (req, res) => {
+groupRouter.post('/expense/add', async (req, res) => {
   // console.log(req.body);
-  (async () => {
-    try {
-      // add to expense table
-      const expense = await Expense.create(req.body);
-      // add to balance table
-      const group = await Group.findById(req.body.group)
-        .populate('users', 'email');
-      const members = group.users;
-      const splitAmount = req.body.amount / members.length;
-      const payorEmail = await User.findById(req.body.payor, 'email');
-      // console.log(payorEmail);
-      members.filter((member) => !member.equals(req.body.payor)).map(async (member) => {
-        let data = {};
-        if (member.email < payorEmail.email) {
-          data = {
-            group: req.body.group,
-            description: req.body.description,
-            expense: expense._id,
-            owe: splitAmount,
-            user1: member,
-            user2: req.body.payor,
-            clear: 0,
-          };
-        } else {
-          data = {
-            group: req.body.group,
-            description: req.body.description,
-            expense: expense._id,
-            owe: -splitAmount,
-            user1: req.body.payor,
-            user2: member,
-            clear: 0,
-          };
-        }
-        await Balance.create(data);
-      });
-      res.status(200).send();
-    } catch (err) {
-      res.status(400).send({ error: 'ADD_EXPENSE_FAIL' });
-    }
-  })();
+  const { status } = await callAndWait('addExpense', req.body);
+  if (status === 200) {
+    res.status(200).send();
+  }
+  else {
+    res.status(400).send({ error: 'ADD_EXPENSE_FAIL' });
+  }
 });
 
+
 // add comment to expense
-groupRouter.post('/expense/addComment', (req, res) => {
+groupRouter.post('/expense/addComment', async (req, res) => {
   // console.log(req.body);
-  (async () => {
-    try {
-      const expense = await Expense.findById(req.body.expense);
-      const note = { comment: req.body.comment, userId: req.body.userId, userName: req.body.userName };
-      await expense.notes.push(note);
-      await expense.save();
-      const expenses = await Expense.find({ group: req.body.group })
-        .populate('payor', 'name')
-        .sort('-date');
-      res.status(200).send({ expenses });
-    } catch (err) {
-      console.log(err);
-      res.status(400).send({ error: 'ADD_COMMENT_FAIL' });
-    }
-  })();
+  const { status, expenses } = await callAndWait('addComment', req.body);
+  if (status === 200) {
+    res.status(200).send({ expenses });
+  }
+  else {
+    res.status(400).send({ error: 'ADD_COMMENT_FAIL' });
+  }
 });
 
 // delete expense comment
-groupRouter.post('/expense/deleteComment', (req, res) => {
+groupRouter.post('/expense/deleteComment', async (req, res) => {
   // console.log(req.body);
-  (async () => {
-    try {
-      const expense = await Expense.findById(req.body.expenseId);
-      await expense.notes.id(req.body.commentId).remove();
-      await expense.save();
-      const expenses = await Expense.find({ group: req.body.group })
-        .populate('payor', 'name')
-        .sort('-date');
-      res.status(200).send({ expenses });
-    } catch (err) {
-      console.log(err);
-      res.status(400).send({ error: 'DELETE_COMMENT_FAIL' });
-    }
-  })();
+  const { status, expenses } = await callAndWait('deleteComment', req.body);
+  if (status === 200) {
+    res.status(200).send({ expenses });
+  }
+  else {
+    res.status(400).send({ error: 'DELETE_COMMENT_FAIL' });
+  }
 });
 
 module.exports = groupRouter;

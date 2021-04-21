@@ -1,16 +1,23 @@
 const mongoose = require('mongoose');
-
+const { mongoDB } = require('./config');
 const { Schema } = mongoose;
 
-// Sequelize connection, TO DELETE
-// const { Sequelize, DataTypes } = require('sequelize');
-// const config = require('./config');
+const options = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  poolSize: 20,
+  bufferMaxEntries: 0,
+  useFindAndModify: false,
+};
 
-// const sequelize = new Sequelize(config.database, config.username, config.password, {
-//   host: config.host,
-//   dialect: 'mysql',
-//   logging: false, // disable logging; defailt: console.log
-// });
+mongoose.connect(mongoDB, options, (err, res) => {
+  if (err) {
+    console.log(err);
+    console.log('MongoDB Connection Failed');
+  } else {
+    console.log('MongoDB Connected');
+  }
+});
 
 const userSchema = new Schema({
   email: { type: String, required: true, unique: true },

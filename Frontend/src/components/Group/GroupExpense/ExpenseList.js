@@ -30,6 +30,9 @@ class ExpenseList extends Component {
       group: this.props.group._id,
     }
     this.props.addComment(data);
+    this.setState({
+      addComment: '',
+    });
   }
 
   deleteComment = (e) => {
@@ -58,7 +61,7 @@ class ExpenseList extends Component {
   render() {
     const currency = this.props.user.currency;
     const timezone = this.props.user.timezone;
-    console.log(this.props.expenses);
+    // console.log(this.props.expenses);
     let expenses = this.props.expenses.map((expense, index) => {
       return(
           <tr>
@@ -92,7 +95,7 @@ class ExpenseList extends Component {
                 {this.props.expenses[this.state.expenseIdx].notes.map(note => 
                   <div class="card-body">
                     <p>{note.comment}</p>
-                    <p><i>{note.userName} added on {note.date}</i></p>
+                    <p><i>{note.userName} added on {dateTimeFormat(note.date, timezone)}</i></p>
                     {note.userId === this.props.user._id? (<button class="btn btn-secondary btn-sm" value={note._id} onClick={(e)=>this.deleteComment(e)}>Delete</button>):(<div />)}
                     </div>)}
               </div>
