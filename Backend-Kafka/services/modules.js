@@ -1,4 +1,11 @@
+require('dotenv').config();
+
+const { userUpdate } = require('./userService');
+
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const saltRound = 10;
 
 const {
   Expense, User, Balance, Group,
@@ -403,6 +410,101 @@ async function deleteComment(msg) {
   }
 }
 
+// user related
+async function userSignUp(msg) {
+  try {
+    const existUser = await User.findOne({ email: msg.email });
+    if (existUser) {
+      return ({ status: 400, error: 'USER_EXISTS'});
+    }
+    const salt = await bcrypt.genSalt(saltRound);
+    msg.password = await bcrypt.hash(msg.password, salt);
+    const newUser = await new User(msg);
+    await newUser.save();
+    console.log(newUser);
+    console.log(process.env);
+    const payload = { _id: newUser._id, name: newUser.name };
+    console.log(process.env.SECRET);
+    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: 86400000 }); // 100800 30 min  
+    console.log(token);
+    const storedUser = {
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      avatar: newUser.avatar,
+      language: newUser.language,
+      currency: newUser.currency,
+      timezone: newUser.timezone,
+      phone: newUser.phone,
+    };
+    const data = { user: storedUser, token: `JWT ${token}` };
+    console.log(data);
+    return ({ status: 200, data: data });
+  } catch (e) {
+    console.log(e);
+    return ({ status: 400 });
+  }
+}
+  
+async function userLogin(msg) {
+  console.log(msg);
+  try {
+    const user = await User.findOne({ email: msg.email });
+    // console.log(user);
+    if (!user) {
+      return ({ status: 401, error: 'WRONG_EMAIL'});
+    }
+    // console.log(msg.password, user.password);
+    const match = await bcrypt.compare(msg.password, user.password);
+    if (match) {
+        const payload = { _id: user._id, name: user.name };
+        const token = jwt.sign(payload, process.env.SECRET, { expiresIn: 86400000 }); // 100800 30 min
+
+        const storedUser = {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          language: user.language,
+          currency: user.currency,
+          timezone: user.timezone,
+          phone: user.phone,
+        };
+
+        const data = { user: storedUser, token: `JWT ${token}` };
+        // console.log(user);
+        // res.status(200).end(`JWT${token}`);
+        console.log('data', data);
+        return ({ status: 200, data: data });
+        // res.status(200).send(data);
+    } else if (!match) {
+        return ({ status: 401, error: 'WRONG_PASSWORD'});
+      }
+  } catch (e) {
+    console.log(e);
+    return ({ status: 400, error: 'LOGIN_FAIL' });
+  }
+}
+
+async function userUpdate(msg) {
+  try {
+    const user = await User.findOneAndUpdate({ _id: msg.id }, msg, { returnOriginal: false })
+    const storedUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      language: user.language,
+      currency: user.currency,
+      timezone: user.timezone,
+      phone: user.phone,
+    };
+    return ({ status: 200, user: storedUser });
+  } catch (e) {
+    return ({ status: 400 });
+  }
+}
+
 module.exports = {
   // This function needs to return a promise
   // dashboard related
@@ -421,4 +523,9 @@ module.exports = {
   addExpense,
   addComment,
   deleteComment,
+
+  // user related
+  userSignUp,
+  userLogin,
+  userUpdate,
 };

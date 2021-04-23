@@ -55,30 +55,10 @@ class NewGroup extends Component{
     }
     this.props.sendInvite(inviteData);
   }
-  //   Axios.post('/group/invite', inviteData)
-  //   .then((response)=>{
-  //     this.setState({
-  //       inviteMsg : 'The user is invited.'});
-  //   })
-  //   .catch((err) => {
-  //     console.log(err);
-  //     this.setState({
-  //       inviteMsg: 'Failed! Unauthorized',
-  //     })
-  //   });
-  // }
 
-  submitSave = async(e) => {
+  submitSave = async (e) => {
     e.preventDefault();
-    // upload group image
-    if (this.state.fileSelected != '') {
-      const data = new FormData();
-      data.append('file', this.state.fileSelected);
-      const res = await Axios.post('/group/upload', data);
-      this.setState({image: `/images/${res.data}`});
-    }
 
-    // create in database
     const group = {
       name: this.state.name,
       image: this.state.image,
@@ -86,11 +66,22 @@ class NewGroup extends Component{
       creator: this.props.user._id,
       // members: this.state.members,     
     }
-    this.props.newGroup(group);
+
+    // upload group image
+    if (this.state.fileSelected != '') {
+      const data = new FormData();
+      data.append('file', this.state.fileSelected);
+      const res = await Axios.post('/group/upload', data);
+      group.image = res.data;
+      this.setState({image: res.data });
+      this.props.newGroup(group);
+    } else {
+      this.props.newGroup(group);
+    }   
   }
 
   render(){
-    if (!cookie.load('user')) {
+    if (!this.props || !this.props.user || !this.props.user._id) {
       return <Redirect to="/landing" />;
     }
 

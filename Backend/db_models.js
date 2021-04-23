@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
@@ -6,12 +7,12 @@ const { mongoDB } = require('./Utils/config');
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  poolSize: 20,
+  poolSize: 10,
   bufferMaxEntries: 0,
   useFindAndModify: false,
 };
 
-mongoose.connect(mongoDB, options, (err, res) => {
+mongoose.connect(process.env.MONGODB_URL, options, (err, res) => {
   if (err) {
     console.log(err);
     console.log('MongoDB Connection Failed');

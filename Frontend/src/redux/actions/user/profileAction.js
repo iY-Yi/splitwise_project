@@ -22,7 +22,7 @@ import { GET_USER, UPDATE_USER } from '../types';
 // };
 
 export const updateUser = (updateData) => (dispatch) => {
-  axios.defaults.headers.common.authorization = localStorage.getItem('token');
+  axios.defaults.headers.common.authorization = updateData.token;
   axios.post('/user/update', updateData)
     .then((Response) => dispatch({
       type: UPDATE_USER,

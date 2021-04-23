@@ -1,12 +1,16 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const multer = require('multer');
+const multerS3 = require('multer-s3');
 const mongoose = require('mongoose');
 const modules = require('../Backend-Kafka/services/modules');
-
-const {
-  User, Group, Expense, Balance,
-} = require('./db_models');
+const { kafka } = require('./kafka');
 const { checkAuth } = require('./Utils/passport');
+const { s3 } = require('./Utils/s3upload');
+
+// const {
+//   User, Group, Expense, Balance,
+// } = require('./db_models');
 
 const groupRouter = express.Router();
 
@@ -37,14 +41,16 @@ groupRouter.get('/userlist', async (req, res) => {
 });
 
 // upload group image
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, '../Frontend/public/images'); // save impages to frontend
-  },
-  filename(req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
+const storage = multerS3({
+  s3: s3,
+  bucket: 'splitwise-project',
+  contentType: multerS3.AUTO_CONTENT_TYPE,
+  acl: 'public-read',
+  key: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`); //use Date.now() for unique file keys
+  }
 });
+
 const upload = multer({ storage }).single('file');
 
 groupRouter.post('/upload', (req, res) => {
@@ -54,7 +60,7 @@ groupRouter.post('/upload', (req, res) => {
     } if (err) {
       return res.status(500).json(err);
     }
-    return res.status(200).send(req.file.filename);
+    return res.status(200).send(req.file.location);
   });
 });
 
@@ -84,7 +90,10 @@ groupRouter.post('/invite', async (req, res) => {
 // display all groups
 groupRouter.get('/all', async (req, res) => {
   const userId = mongoose.Types.ObjectId(req.query.user);
-  const { status, user } = await callAndWait('getGroupList', userId);
+  const result = await callAndWait('getGroupList', userId);
+  console.log(result);
+  const { status, user } = result;
+  console.log(status, user);
   if (status === 200) {
     res.status(200).end(JSON.stringify(user));
   }

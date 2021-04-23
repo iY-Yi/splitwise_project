@@ -60,7 +60,7 @@ async function kafka() {
   console.info(chalk.green(`Connected consumer group ${groupId}`));
 
   const awaitCallbacks = {};
-  subscribe(allTopics.API_RESP, ({ msgId, resp, success }) => {
+  subscribe(allTopics.API_CALL, ({ msgId, resp, success }) => {
     // console.log(`Received message from topic ${allTopics.API_RESP}`, resp);
     // awaitCallbacks can be lost on restart, or in kafka server mode
     if (awaitCallbacks.hasOwnProperty(msgId)) {
@@ -77,7 +77,7 @@ async function kafka() {
       const msgId = crypto.randomBytes(64).toString('hex');
 
       awaitCallbacks[msgId] = [resolve, reject];
-      send(allTopics.API_CALL, { fn, params, msgId });
+      send(allTopics.API_RESP, { fn, params, msgId });
     }),
   };
 }

@@ -20,9 +20,9 @@ class AllGroup extends Component {
   }
 
   render() {
-    if (!cookie.load('user')) {
+    if (!this.props || !this.props.user || !this.props.user._id) {
       return <Redirect to="/landing" />;
-    }
+    }  
 
     return (
       <div className="container-fluid">

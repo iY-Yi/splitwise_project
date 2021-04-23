@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const { kafka } = require('./kafka');
 const { checkAuth } = require('./Utils/passport');
 
-const WEB_SERVER = 'http://localhost:3000';
+// const WEB_SERVER = 'http://localhost:3000';
 
 const modules = require('../Backend-Kafka/services/modules');
 
@@ -50,7 +50,7 @@ app.use(bodyParser.json());
 
 // Allow Access Control
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', WEB_SERVER);
+  res.setHeader('Access-Control-Allow-Origin', process.env.WEB_SERVER);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers');
@@ -58,27 +58,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// const { mongoDB } = require('./Utils/config');
-// const {
-//   Expense, User, Balance,
-// } = require('./db_models');
-
-// const options = {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-//   poolSize: 50,
-//   bufferMaxEntries: 0,
-//   useFindAndModify: false,
-// };
-
-// mongoose.connect(mongoDB, options, (err, res) => {
-//   if (err) {
-//     console.log(err);
-//     console.log('MongoDB Connection Failed');
-//   } else {
-//     console.log('MongoDB Connected');
-//   }
-// });
 
 const userRoutes = require('./userRouter');
 const groupRoutes = require('./groupRouter');
@@ -122,7 +101,9 @@ app.post('/settle', checkAuth, async (req, res) => {
 // display all activities
 app.get('/activity', async (req, res) => {
   // console.log(req.query.user);
-  const { activities, groups, status } = await callAndWait('getActivity', req.query.user);
+  const result = await callAndWait('getActivity', req.query.user);
+  console.log(result);
+  const { activities, groups, status } = result;
   // console.log(status);
   if (status === 200) {
     res.status(200).send({ activities, groups });

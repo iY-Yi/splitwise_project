@@ -1,6 +1,5 @@
 import Axios from 'axios';
 import React, {Component} from 'react';
-import cookie from 'react-cookies';
 import moment from 'moment-timezone'; 
 import {Redirect} from 'react-router';
 import PropTypes from 'prop-types';
@@ -69,18 +68,8 @@ class Profile extends Component{
 
   submitSave = async(e) => {
     e.preventDefault();
-    // upload avatar image
     try {
-      if (this.state.fileSelected != '') {
-        const data = new FormData();
-        data.append('file', this.state.fileSelected);
-        const res = await Axios.post('/user/upload', data);
-        // const user = this.state.user;
-        // user['avatar'] = `/images/${res.data}`;
-        this.setState({avatar: `/images/${res.data}`});
-      }
-  
-      // update in database
+      // update data
       const updateData = {
         id: this.state.id,
         name: this.state.name,
@@ -90,11 +79,25 @@ class Profile extends Component{
         language: this.state.language,
         timezone: this.state.timezone,
         currency: this.state.currency,
+        token: this.props.token,
       }
-      this.props.updateUser(updateData);
-      // Axios.defaults.headers.common['authorization'] = localStorage.getItem('token');
-      // const response = await Axios.post("/user/update", user)
-      // console.log("Profile saved: ", response.status);
+
+      if (this.state.fileSelected != '') {
+        const data = new FormData();
+        data.append('file', this.state.fileSelected);
+        // data.append('ID', this.props.user._id);
+        const res = await Axios.post('/user/uploadFile', data);
+
+        // console.log(res);
+        updateData.avatar = res.data;
+        this.setState({avatar: res.data});
+        await this.props.updateUser(updateData);
+      }
+      
+      else {
+        this.props.updateUser(updateData);
+      }
+      
       this.setState({ saveStatus: true, disabled: true, error: '', });
       }
     catch (e) {
@@ -110,7 +113,7 @@ class Profile extends Component{
   }
 
   render(){
-    if (!cookie.load('user')) {
+    if (!this.props || !this.props.user || !this.props.user._id) {
       return <Redirect to="/landing" />;
     }
     const timeZones = moment.tz.names().map((name) => {
@@ -173,10 +176,12 @@ Profile.propTypes = {
   // getUser: PropTypes.func.isRequired,
   updateUser: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired,
+  token: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
   user: state.login.user,
+  token: state.login.token
 });
 
 export default connect(mapStateToProps, { updateUser })(Profile);
