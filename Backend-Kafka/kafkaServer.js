@@ -1,5 +1,6 @@
 require('dotenv').config();
-const { kafka, topics } = require('./kafka');
+const { mongoose } = new require('./services/mongoose');
+const { kafka, topics } = require('../Backend/kafka');
 const modules = require('./services/modules');
 
 (async () => {

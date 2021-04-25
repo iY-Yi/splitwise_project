@@ -2,8 +2,6 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const { mongoDB } = require('./Utils/config');
-
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,

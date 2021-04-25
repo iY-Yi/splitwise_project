@@ -7,11 +7,10 @@ const jwt = require('jsonwebtoken');
 const saltRound = 10;
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const { User } = require('./db_models');
-const { secret } = require('./Utils/config');
+const { s3 } = require('./Utils/s3upload');
+
 const { auth } = require('./Utils/passport');
 const { checkAuth } = require('./Utils/passport');
-const { s3 } = require('./Utils/s3upload');
 const { kafka } = require('./kafka');
 const modules = require('../Backend-Kafka/services/modules');
 

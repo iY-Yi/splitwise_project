@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { userUpdate } = require('./userService');
+// const { userUpdate } = require('./userService');
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
@@ -96,8 +96,9 @@ async function getBalance(user) {
     const owes = [];
     const owed = [];
     balances.map((data) => {
+      console.log(data.user1, data.user2, data.total, user);
       let record;
-      if ((data.user1 === user && data.total > 0) || (data.user2 === user && data.total < 0)) {
+      if ((data.user1 == user && data.total > 0) || (data.user2 == user && data.total < 0)) {
         if (data.total < 0) {
           record = { balance: -data.total, userId: data.user1, name: data.U1[0].name };
         } else {
@@ -505,7 +506,13 @@ async function userUpdate(msg) {
   }
 }
 
+async function sum(a, b) {
+  return a + b;
+}
+
 module.exports = {
+  // test
+  sum,
   // This function needs to return a promise
   // dashboard related
   getActivity,

@@ -91,7 +91,7 @@ groupRouter.post('/invite', async (req, res) => {
 groupRouter.get('/all', async (req, res) => {
   const userId = mongoose.Types.ObjectId(req.query.user);
   const result = await callAndWait('getGroupList', userId);
-  console.log(result);
+  console.log('get group list result ', result);
   const { status, user } = result;
   console.log(status, user);
   if (status === 200) {

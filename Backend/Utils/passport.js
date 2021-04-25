@@ -1,14 +1,16 @@
+require('dotenv').config();
+
 const JwtStrategy = require('passport-jwt').Strategy;
 const { ExtractJwt } = require('passport-jwt');
 const passport = require('passport');
-const { secret } = require('./config');
+// const { secret } = require('./config');
 const { User } = require('../db_models');
 
 // Setup work and export for the JWT passport strategy
 function auth() {
   const opts = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt'),
-    secretOrKey: secret,
+    secretOrKey: process.env.SECRET,
   };
   passport.use(
     new JwtStrategy(opts, (jwt_payload, callback) => {

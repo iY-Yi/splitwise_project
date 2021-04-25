@@ -31,7 +31,8 @@ async function kafka() {
   const subscriptions = {};
   await producer.connect();
   await consumer.connect();
-  await Promise.all(topics.map((topic) => consumer.subscribe({ topic })));
+  await consumer.subscribe({ topic: 'api-call' });
+  // await Promise.all(topics.map((topic) => consumer.subscribe({ topic })));
 
   const send = async (topic, msg) => {
     const messages = [{ value: JSON.stringify(msg) }];
@@ -48,7 +49,7 @@ async function kafka() {
   console.log(`Still connecting to consumer group ${groupId} ...`);
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      console.log(`consumer: ${topic}`, message);
+      console.log(`Kafka consumer: ${topic}`, message);
       if (subscriptions.hasOwnProperty(topic)) {
         subscriptions[topic].forEach((callback) => {
           callback(JSON.parse(message.value.toString()), new Date(parseInt(message.timestamp)));

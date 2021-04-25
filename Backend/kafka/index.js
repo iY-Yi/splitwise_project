@@ -25,14 +25,16 @@ async function kafka() {
   const producer = k.producer();
   const groupId = process.env.GROUP;
   // App wide consumer group
-  const consumer = k.consumer({ groupId, fromBeginning: false });
+  const consumer = k.consumer({ groupId });
+  // const consumer = k.consumer({ groupId, fromBeginning: false });
   // Topics need to be defined before staring the server
   const topics = Object.values(allTopics);
   const subscriptions = {};
   await producer.connect();
   await consumer.connect();
   await Promise.all(topics.map((topic) => consumer.subscribe({ topic })));
-
+  // await consumer.subscribe({ topic: allTopics.API_RESP });
+  console.log('backend consumer set up');
   const send = async (topic, msg) => {
     const messages = [{ value: JSON.stringify(msg) }];
     console.log(`Sending messages to topic ${topic}`, messages);
@@ -46,9 +48,10 @@ async function kafka() {
     subscriptions[topic].push((...args) => callback(...args, name));
   };
   console.log(`Still connecting to consumer group ${groupId} ...`);
+  
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      console.log(`consumer: ${topic}`, message);
+      console.log(`backend consumer run: ${topic}`, message);
       if (subscriptions.hasOwnProperty(topic)) {
         subscriptions[topic].forEach((callback) => {
           callback(JSON.parse(message.value.toString()), new Date(parseInt(message.timestamp)));
@@ -61,7 +64,7 @@ async function kafka() {
 
   const awaitCallbacks = {};
   subscribe(allTopics.API_RESP, ({ msgId, resp, success }) => {
-    // console.log(`Received message from topic ${allTopics.API_RESP}`, resp);
+    console.log(`Received message from topic ${allTopics.API_RESP}`, resp);
     // awaitCallbacks can be lost on restart, or in kafka server mode
     if (awaitCallbacks.hasOwnProperty(msgId)) {
       awaitCallbacks[msgId][success ? 0 : 1](resp);
@@ -77,7 +80,9 @@ async function kafka() {
       const msgId = crypto.randomBytes(64).toString('hex');
 
       awaitCallbacks[msgId] = [resolve, reject];
+      console.log('send message:', fn);
       send(allTopics.API_CALL, { fn, params, msgId });
+
     }),
   };
 }
