@@ -65,18 +65,18 @@ app.use((req, res, next) => {
 });
 
 
-// const userRoutes = require('./userRouter');
-// const groupRoutes = require('./groupRouter');
+const userRoutes = require('./userRouter');
+const groupRoutes = require('./groupRouter');
 
-// app.use('/user', userRoutes);
-// app.use('/group', groupRoutes);
+app.use('/user', userRoutes);
+app.use('/group', groupRoutes);
 
-// for kafka test
-app.post('/sum', async (req, res) => {
-  console.log(req.body);
-  const sum = await callAndWait('sum', req.body.a, req.body.b);
-  res.status(200).send({ sum });
-});
+// // for kafka test
+// app.post('/sum', async (req, res) => {
+//   console.log(req.body);
+//   const sum = await callAndWait('sum', req.body.a, req.body.b);
+//   res.status(200).send({ sum });
+// });
 
 // display balances in dashboard
 app.get('/dashboard', checkAuth, async (req, res) => {
@@ -120,82 +120,33 @@ app.get('/activity', async (req, res) => {
 
 
 
-app.post('/user/signup', async (req, res) => {
-  req.body.avatar = `${process.env.S3_URL}/default.jpg`;
-  req.body.currency = 'USD';
-  req.body.language = 'English';
-  req.body.timezone = 'US/Pacific';
-  const {status, data } = await callAndWait('userSignUp', req.body);
-  // console.log('results: ', status, data);
-  if (status === 200) {
-    res.status(200).send(data);
-  }
-  else {
-    res.status(500).send({error: 'SIGN_UP_FAIL'});
-  }
-});
+// app.post('/user/signup', async (req, res) => {
+//   req.body.avatar = `${process.env.S3_URL}/default.jpg`;
+//   req.body.currency = 'USD';
+//   req.body.language = 'English';
+//   req.body.timezone = 'US/Pacific';
+//   const {status, data } = await callAndWait('userSignUp', req.body);
+//   // console.log('results: ', status, data);
+//   if (status === 200) {
+//     res.status(200).send(data);
+//   }
+//   else {
+//     res.status(500).send({error: 'SIGN_UP_FAIL'});
+//   }
+// });
 
-app.post('/user/login', async (req, res) => {
-  const { status, data, error } =  await callAndWait('userLogin', req.body);
-  // console.log('login status', status);
-  if (status === 200) {
-    res.status(200).send(data);
-  }
-  else {
-    res.status(401).send({ error });
-  }
-});
+// app.post('/user/login', async (req, res) => {
+//   const { status, data, error } =  await callAndWait('userLogin', req.body);
+//   // console.log('login status', status);
+//   if (status === 200) {
+//     res.status(200).send(data);
+//   }
+//   else {
+//     res.status(401).send({ error });
+//   }
+// });
 
-// upload avatar image
-const storage = multerS3({
-  s3: s3,
-  bucket: 'splitwise-project',
-  contentType: multerS3.AUTO_CONTENT_TYPE,
-  acl: 'public-read',
-  key: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`); //use Date.now() for unique file keys
-  }
-});
-
-const upload = multer({ storage }).single('file');
-
-app.post('/user/uploadFile', async (req, res) => {
-  upload(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      return res.status(500).json(err);
-    } if (err) {
-      return res.status(500).json(err);
-    }
-    return res.status(200).send(req.file.location);
-  });
-});
-
-app.post('/user/update', checkAuth, async (req, res) => {
-  // console.log(req.body);
-  const {status, user } = await callAndWait('userUpdate', req.body);
-  // console.log(user);
-  if (status === 200) {
-    res.status(200).send(user);
-  }
-  else {
-    res.status(400).send({error: 'UPDATE_FAIL'});
-  }
-});
-
-// groups
-// send all users to NewGroup page
-app.get('/group/userlist', async (req, res) => {
-  const { status, users } = await callAndWait('getUserList');
-  // console.log(status);
-  if (status === 200) {
-    res.status(200).send( users );
-  }
-  else {
-    res.status(400).send({ error: 'LOADING_FAIL' });
-  }
-});
-
-// upload group image
+// // upload avatar image
 // const storage = multerS3({
 //   s3: s3,
 //   bucket: 'splitwise-project',
@@ -208,131 +159,180 @@ app.get('/group/userlist', async (req, res) => {
 
 // const upload = multer({ storage }).single('file');
 
-app.post('/group/upload', (req, res) => {
-  upload(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      return res.status(500).json(err);
-    } if (err) {
-      return res.status(500).json(err);
-    }
-    return res.status(200).send(req.file.location);
-  });
-});
+// app.post('/user/uploadFile', async (req, res) => {
+//   upload(req, res, (err) => {
+//     if (err instanceof multer.MulterError) {
+//       return res.status(500).json(err);
+//     } if (err) {
+//       return res.status(500).json(err);
+//     }
+//     return res.status(200).send(req.file.location);
+//   });
+// });
 
-// create new group
-app.post('/group/new', async (req, res) => {
-  const { status, error } = await callAndWait('newGroup', req.body);
-  if (status === 200) {
-    res.status(200).send({ message: 'SUCCESS' });
-  }
-  else {
-    res.status(400).send({ error });
-  }
-});
+// app.post('/user/update', checkAuth, async (req, res) => {
+//   // console.log(req.body);
+//   const {status, user } = await callAndWait('userUpdate', req.body);
+//   // console.log(user);
+//   if (status === 200) {
+//     res.status(200).send(user);
+//   }
+//   else {
+//     res.status(400).send({error: 'UPDATE_FAIL'});
+//   }
+// });
 
-// invite user to group
-app.post('/group/invite', async (req, res) => {
-  // console.log(req.body);
-  const { status, error } = await callAndWait('inviteGroup', req.body);
-  if (status === 200) {
-    res.status(200).send({ message: 'SUCCESS' });
-  }
-  else {
-    res.status(400).send({ error });
-  }
-});
+// // groups
+// // send all users to NewGroup page
+// app.get('/group/userlist', async (req, res) => {
+//   const { status, users } = await callAndWait('getUserList');
+//   // console.log(status);
+//   if (status === 200) {
+//     res.status(200).send( users );
+//   }
+//   else {
+//     res.status(400).send({ error: 'LOADING_FAIL' });
+//   }
+// });
 
-// display all groups
-app.get('/group/all', async (req, res) => {
-  const userId = mongoose.Types.ObjectId(req.query.user);
-  const result = await callAndWait('getGroupList', userId);
-  // console.log('get group list result ', result);
-  const { status, user } = result;
-  // console.log(status, user);
-  if (status === 200) {
-    res.status(200).end(JSON.stringify(user));
-  }
-  else {
-    res.status(400).send({ error: 'GROUPS_LOADING_FAIL' });
-  }
-});
+// // upload group image
+// // const storage = multerS3({
+// //   s3: s3,
+// //   bucket: 'splitwise-project',
+// //   contentType: multerS3.AUTO_CONTENT_TYPE,
+// //   acl: 'public-read',
+// //   key: function (req, file, cb) {
+// //     cb(null, `${Date.now()}-${file.originalname}`); //use Date.now() for unique file keys
+// //   }
+// // });
 
-// leave group
-app.post('/group/leave', async (req, res) => {
-  // console.log(req.body);
-  const { group, user } = req.body;
-  const { status, updatedUser } = await callAndWait('leaveGroup', user, group);
-  if (status === 200) {
-    res.status(200).send(updatedUser.groups);
-  }
-  else {
-    res.status(400).send({ error: 'OPEN_BALANCE' });
-  }
-});
+// // const upload = multer({ storage }).single('file');
 
-// Accept group invite
-app.put('/group/accept', async (req, res) => {
-  const groupId = req.body.group;
-  const userId = req.body.user;
+// app.post('/group/upload', (req, res) => {
+//   upload(req, res, (err) => {
+//     if (err instanceof multer.MulterError) {
+//       return res.status(500).json(err);
+//     } if (err) {
+//       return res.status(500).json(err);
+//     }
+//     return res.status(200).send(req.file.location);
+//   });
+// });
 
-  const { status, updatedUser } = await callAndWait('acceptGroup', userId, groupId);
-  if (status === 200) {
-    res.status(200).send(updatedUser);
-  }
-  else {
-    res.status(400).send('ACCEPT_INVITE_FAIL');
-  }
-});
+// // create new group
+// app.post('/group/new', async (req, res) => {
+//   const { status, error } = await callAndWait('newGroup', req.body);
+//   if (status === 200) {
+//     res.status(200).send({ message: 'SUCCESS' });
+//   }
+//   else {
+//     res.status(400).send({ error });
+//   }
+// });
 
-// get group expense list
-app.get('/group/expense/:group', async (req, res) => {
-  const { group } = req.params;
-  const { user } = req.query;
-  const { status, data } = await callAndWait('getGroupExpense', user, group);
-  if (status === 200) {
-    res.status(200).send(data);
-  }
-  else {
-    res.status(400).send({ error: 'UNAUTHORIZED' });
-  }
-});
+// // invite user to group
+// app.post('/group/invite', async (req, res) => {
+//   // console.log(req.body);
+//   const { status, error } = await callAndWait('inviteGroup', req.body);
+//   if (status === 200) {
+//     res.status(200).send({ message: 'SUCCESS' });
+//   }
+//   else {
+//     res.status(400).send({ error });
+//   }
+// });
 
-// add new expense
-app.post('/group/expense/add', async (req, res) => {
-  // console.log(req.body);
-  const { status } = await callAndWait('addExpense', req.body);
-  if (status === 200) {
-    res.status(200).send();
-  }
-  else {
-    res.status(400).send({ error: 'ADD_EXPENSE_FAIL' });
-  }
-});
+// // display all groups
+// app.get('/group/all', async (req, res) => {
+//   const userId = mongoose.Types.ObjectId(req.query.user);
+//   const result = await callAndWait('getGroupList', userId);
+//   // console.log('get group list result ', result);
+//   const { status, user } = result;
+//   // console.log(status, user);
+//   if (status === 200) {
+//     res.status(200).end(JSON.stringify(user));
+//   }
+//   else {
+//     res.status(400).send({ error: 'GROUPS_LOADING_FAIL' });
+//   }
+// });
+
+// // leave group
+// app.post('/group/leave', async (req, res) => {
+//   // console.log(req.body);
+//   const { group, user } = req.body;
+//   const { status, updatedUser } = await callAndWait('leaveGroup', user, group);
+//   if (status === 200) {
+//     res.status(200).send(updatedUser.groups);
+//   }
+//   else {
+//     res.status(400).send({ error: 'OPEN_BALANCE' });
+//   }
+// });
+
+// // Accept group invite
+// app.put('/group/accept', async (req, res) => {
+//   const groupId = req.body.group;
+//   const userId = req.body.user;
+
+//   const { status, updatedUser } = await callAndWait('acceptGroup', userId, groupId);
+//   if (status === 200) {
+//     res.status(200).send(updatedUser);
+//   }
+//   else {
+//     res.status(400).send('ACCEPT_INVITE_FAIL');
+//   }
+// });
+
+// // get group expense list
+// app.get('/group/expense/:group', async (req, res) => {
+//   const { group } = req.params;
+//   const { user } = req.query;
+//   const { status, data } = await callAndWait('getGroupExpense', user, group);
+//   if (status === 200) {
+//     res.status(200).send(data);
+//   }
+//   else {
+//     res.status(400).send({ error: 'UNAUTHORIZED' });
+//   }
+// });
+
+// // add new expense
+// app.post('/group/expense/add', async (req, res) => {
+//   // console.log(req.body);
+//   const { status } = await callAndWait('addExpense', req.body);
+//   if (status === 200) {
+//     res.status(200).send();
+//   }
+//   else {
+//     res.status(400).send({ error: 'ADD_EXPENSE_FAIL' });
+//   }
+// });
 
 
-// add comment to expense
-app.post('/group/expense/addComment', async (req, res) => {
-  // console.log(req.body);
-  const { status, expenses } = await callAndWait('addComment', req.body);
-  if (status === 200) {
-    res.status(200).send({ expenses });
-  }
-  else {
-    res.status(400).send({ error: 'ADD_COMMENT_FAIL' });
-  }
-});
+// // add comment to expense
+// app.post('/group/expense/addComment', async (req, res) => {
+//   // console.log(req.body);
+//   const { status, expenses } = await callAndWait('addComment', req.body);
+//   if (status === 200) {
+//     res.status(200).send({ expenses });
+//   }
+//   else {
+//     res.status(400).send({ error: 'ADD_COMMENT_FAIL' });
+//   }
+// });
 
-// delete expense comment
-app.post('/group/expense/deleteComment', async (req, res) => {
-  // console.log(req.body);
-  const { status, expenses } = await callAndWait('deleteComment', req.body);
-  if (status === 200) {
-    res.status(200).send({ expenses });
-  }
-  else {
-    res.status(400).send({ error: 'DELETE_COMMENT_FAIL' });
-  }
-});
+// // delete expense comment
+// app.post('/group/expense/deleteComment', async (req, res) => {
+//   // console.log(req.body);
+//   const { status, expenses } = await callAndWait('deleteComment', req.body);
+//   if (status === 200) {
+//     res.status(200).send({ expenses });
+//   }
+//   else {
+//     res.status(400).send({ error: 'DELETE_COMMENT_FAIL' });
+//   }
+// });
 
 app.get('/error', (req, res, next) => {
   // some error in this request

@@ -66,44 +66,57 @@ class Profile extends Component{
     });
   }
 
+  handleValidation() {
+    const phone = this.state.phone;
+    let isValid = true;
+    const phonePattern  = /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/; 
+    if (!phonePattern.test(phone)) {
+      isValid = false;
+      alert('Invalid phone number!');
+    } 
+    return isValid;
+  }
+
   submitSave = async(e) => {
     e.preventDefault();
-    try {
-      // update data
-      const updateData = {
-        id: this.state.id,
-        name: this.state.name,
-        email: this.state.email,
-        phone: this.state.phone,
-        avatar: this.state.avatar,
-        language: this.state.language,
-        timezone: this.state.timezone,
-        currency: this.state.currency,
-        token: this.props.token,
-      }
+    if (this.handleValidation()) {
+      try {
+        // update data
+        const updateData = {
+          id: this.state.id,
+          name: this.state.name,
+          email: this.state.email,
+          phone: this.state.phone,
+          avatar: this.state.avatar,
+          language: this.state.language,
+          timezone: this.state.timezone,
+          currency: this.state.currency,
+          token: this.props.token,
+        }
 
-      if (this.state.fileSelected != '') {
-        const data = new FormData();
-        data.append('file', this.state.fileSelected);
-        // data.append('ID', this.props.user._id);
-        const res = await Axios.post('/user/uploadFile', data);
+        if (this.state.fileSelected != '') {
+          const data = new FormData();
+          data.append('file', this.state.fileSelected);
+          // data.append('ID', this.props.user._id);
+          const res = await Axios.post('/user/uploadFile', data);
 
-        // console.log(res);
-        updateData.avatar = res.data;
-        this.setState({avatar: res.data});
-        await this.props.updateUser(updateData);
+          // console.log(res);
+          updateData.avatar = res.data;
+          this.setState({avatar: res.data});
+          await this.props.updateUser(updateData);
+        }
+        
+        else {
+          this.props.updateUser(updateData);
+        }
+        
+        this.setState({ saveStatus: true, disabled: true, error: '', });
+        }
+      catch (e) {
+        // console.log(e);
+        this.setState({saveStatus: false,
+          error: 'Profile save failed.',});
       }
-      
-      else {
-        this.props.updateUser(updateData);
-      }
-      
-      this.setState({ saveStatus: true, disabled: true, error: '', });
-      }
-    catch (e) {
-      // console.log(e);
-      this.setState({saveStatus: false,
-        error: 'Profile save failed.',});
     }
   }
 
