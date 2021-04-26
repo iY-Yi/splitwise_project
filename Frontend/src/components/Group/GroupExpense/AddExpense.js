@@ -52,7 +52,7 @@ class AddExpense extends Component {
       <>
 
         <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#addExpenseModal" disabled={!authorized}>
-          Add an expense
+          Add expense
         </button>
 
         {/* Modal to add expense */}

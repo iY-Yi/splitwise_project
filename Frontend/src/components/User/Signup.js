@@ -39,7 +39,7 @@ class Signup extends Component{
     if (this.props && this.props.user && this.props.user._id) {
       return <Redirect to="/dashboard" />;
     }
-    console.log(this.props.user);
+    // console.log(this.props.user);
     let message = '';
     if (this.state.submitted === true && this.props.user && this.props.user.email) {
       // console.log('redirect to dashboard');

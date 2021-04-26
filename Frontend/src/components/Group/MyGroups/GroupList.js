@@ -27,16 +27,6 @@ class GroupList extends Component{
       user: this.props.user._id
     };
     this.props.leaveGroup(data);
-    // this.setState({ message: '' });
-
-    // Axios.post('/group/leave', data)
-    // .then(()=> {
-    //   this.setState({ message: 'Leave group successfully.' });
-    //   this.componentDidMount();
-    // })
-    // .catch((err) => {
-    //   this.setState({ message: 'Failed: OPEN_BALANCE' });
-    // })
   }
 
   render(){

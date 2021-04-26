@@ -12,9 +12,6 @@ class BalanceList extends Component {
   }
 
   render() {
-    if (!this.props || !this.props.user || !this.props.user._id) {
-      return <Redirect to="/landing" />;
-    }
     const { currency } = this.props.user;
     console.log(this.props.balances);
     const balances = this.props.balances.map((balance) => {

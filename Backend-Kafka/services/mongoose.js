@@ -7,7 +7,7 @@ mongoose.Promise = global.Promise;
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  poolSize: 10,
+  poolSize: 40,
   bufferMaxEntries: 0,
   useFindAndModify: false,
 };
@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGODB_URL, options, (err, res) => {
     console.log(err);
     console.log('MongoDB Connection Failed');
   } else {
-    console.log('MongoDB Connected');
+    console.log('Kafka Backend MongoDB Connected');
   }
 });
 

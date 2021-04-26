@@ -448,7 +448,7 @@ async function userSignUp(msg) {
 }
   
 async function userLogin(msg) {
-  console.log(msg);
+  // console.log(msg);
   try {
     const user = await User.findOne({ email: msg.email });
     // console.log(user);
@@ -475,7 +475,7 @@ async function userLogin(msg) {
         const data = { user: storedUser, token: `JWT ${token}` };
         // console.log(user);
         // res.status(200).end(`JWT${token}`);
-        console.log('data', data);
+        // console.log('data', data);
         return ({ status: 200, data: data });
         // res.status(200).send(data);
     } else if (!match) {

@@ -108,7 +108,7 @@ app.post('/settle', checkAuth, async (req, res) => {
 app.get('/activity', async (req, res) => {
   // console.log(req.query.user);
   const result = await callAndWait('getActivity', req.query.user);
-  console.log(result);
+  // console.log(result);
   const { activities, groups, status } = result;
   // console.log(status);
   if (status === 200) {
@@ -126,7 +126,7 @@ app.post('/user/signup', async (req, res) => {
   req.body.language = 'English';
   req.body.timezone = 'US/Pacific';
   const {status, data } = await callAndWait('userSignUp', req.body);
-  console.log('results: ', status, data);
+  // console.log('results: ', status, data);
   if (status === 200) {
     res.status(200).send(data);
   }
@@ -137,7 +137,7 @@ app.post('/user/signup', async (req, res) => {
 
 app.post('/user/login', async (req, res) => {
   const { status, data, error } =  await callAndWait('userLogin', req.body);
-  console.log('login status', status);
+  // console.log('login status', status);
   if (status === 200) {
     res.status(200).send(data);
   }
@@ -173,7 +173,7 @@ app.post('/user/uploadFile', async (req, res) => {
 app.post('/user/update', checkAuth, async (req, res) => {
   // console.log(req.body);
   const {status, user } = await callAndWait('userUpdate', req.body);
-  console.log(user);
+  // console.log(user);
   if (status === 200) {
     res.status(200).send(user);
   }
@@ -246,9 +246,9 @@ app.post('/group/invite', async (req, res) => {
 app.get('/group/all', async (req, res) => {
   const userId = mongoose.Types.ObjectId(req.query.user);
   const result = await callAndWait('getGroupList', userId);
-  console.log('get group list result ', result);
+  // console.log('get group list result ', result);
   const { status, user } = result;
-  console.log(status, user);
+  // console.log(status, user);
   if (status === 200) {
     res.status(200).end(JSON.stringify(user));
   }
@@ -271,7 +271,7 @@ app.post('/group/leave', async (req, res) => {
 });
 
 // Accept group invite
-app.post('/group/accept', async (req, res) => {
+app.put('/group/accept', async (req, res) => {
   const groupId = req.body.group;
   const userId = req.body.user;
 
