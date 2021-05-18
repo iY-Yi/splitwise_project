@@ -19,10 +19,11 @@ class Dashboard extends Component {
 
   // get all balances
   componentDidMount() {
-    this.setState({ user: cookie.load('user') });
+    // this.setState({ user: cookie.load('user') });
+    this.setState({ user: localStorage.getItem('user') });
     Axios.get('/dashboard', {
       params: {
-        user: cookie.load('user'),
+        user: localStorage.getItem('user'),
       },
     })
       .then((response) => {
@@ -66,7 +67,8 @@ class Dashboard extends Component {
   }
 
   render() {
-    if (!cookie.load('user')) {
+    // !cookie.load('user')
+    if (!localStorage.getItem('user')) {
       return <Redirect to="/landing" />;
     }
     const currency = cookie.load('currency');

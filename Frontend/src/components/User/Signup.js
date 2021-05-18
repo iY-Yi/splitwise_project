@@ -1,10 +1,13 @@
 import Axios from 'axios';
 import React, {Component} from 'react';
+import { graphql, compose } from 'react-apollo';
 import {Redirect} from 'react-router';
 import { userSignup } from '../../js/actions/signupAction';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import cookie from 'react-cookies';
+import qlQuery from '../../util';
+import { userSignUpMutation } from '../../mutation/mutation';
 
 class Signup extends Component{
   state = {
@@ -28,31 +31,54 @@ class Signup extends Component{
       //this.setState({ submitted: true});
       const {user} = this.state;
       // console.log(user);
+      // (async () => {
+      //   // Mutation addUser
+      //   console.log(user);
+      //   console.log(await qlQuery(
+      //       // "mutation _($userInput: UserSignup) {addUser(user: $userInput) {email currency timezone}}",
+      //       userSignUpMutation,
+      //       {"userInput": user} //variables need to passed as the second argument
+      //   ));
+      this.props.userSignUpMutation({
+        variables: {
+            email: user.email,
+            name: user.name,
+            password: user.password,
+        },
+        // refetchQueries: [{ query: getBooksQuery }]
+      });
+
+        this.setState({ submitted: true});
+        localStorage.setItem('user', this.state.user.email);
+        localStorage.setItem('currency', 'USD');
+        localStorage.setItem('timezone', 'US/Pacific');
+      // })();      
 
       // this.props.userSignup(user);
       // this.setState({
       //   submitted: true,
       // });
 
-      Axios.post("/user/signup", user)
-      .then((response)=> {
-          console.log("Successful: ", response.status);
-          this.setState({ submitted: true});
-      })
-      .catch((err) => {
-          console.log("Error", err);
-          this.setState({ submitted : false});
-      });
+      // Axios.post("/user/signup", user)
+      // .then((response)=> {
+      //     console.log("Successful: ", response.status);
+      //     this.setState({ submitted: true});
+      // })
+      // .catch((err) => {
+      //     console.log("Error", err);
+      //     this.setState({ submitted : false});
+      // });
     
   }
 
   render(){
-    if (cookie.load('user')) {
+    if (localStorage.getItem('user')) {
       return <Redirect to="/dashboard" />;
     }
     // console.log('In signup', this.props);
     let message = '';
-    if (this.state.submitted === true && this.props.user && this.props.user.email) {
+    // if (this.state.submitted === true && this.props.user && this.props.user.email) {
+    if (this.state.submitted === true) {
       // console.log('redirect to dashboard');
       return <Redirect to= "/dashboard" />;
     }
@@ -79,18 +105,6 @@ class Signup extends Component{
       );
   }
 }
-export default Signup;
+// export default Signup;
+export default graphql(userSignUpMutation, { name: "userSignUpMutation" })(Signup);
 
-// Signup.propTypes = {
-//   userSignup: PropTypes.func.isRequired,
-//   user: PropTypes.object.isRequired
-// }
-
-// const mapStateToProps = (state) => {
-//   return ({
-//     user: state.login.user // state.user in login reducer
-//   });
-// };
-
-// // export default Signup;
-// export default connect(mapStateToProps, { userSignup})(Signup);

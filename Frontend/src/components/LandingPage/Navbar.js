@@ -18,12 +18,14 @@ class Navbar extends Component {
       cookie.remove('currency', { path: '/' })
       cookie.remove('timezone', { path: '/' })
       this.props.userLogout();
+      localStorage.clear();
   }
 
   render() {
     // if Cookie is set render Logout Button
     let navLogin = null;
-    if (cookie.load('user')) {
+    // if (cookie.load('user')) {
+      if (localStorage.getItem('user')) {
       // console.log('Able to read cookie');
       navLogin = (
           <ul className="navbar-nav">

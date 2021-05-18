@@ -3,7 +3,8 @@ import React, {Component} from 'react';
 import cookie from 'react-cookies';
 import moment from 'moment-timezone'; 
 import {Redirect} from 'react-router';
-import { graphql } from 'react-apollo';
+import { graphql, compose, useQuery } from 'react-apollo';
+// import { useQuery } from '@apollo/client';
 import { getUserProfileQuery, getUserProfileTest } from '../../queries/queries';
 import qlQuery from '../../util';
 
@@ -25,15 +26,13 @@ class Profile extends Component{
   };
 
   componentDidMount(){
-    const id = cookie.load('user');
-      (async () => {
-      const data = await qlQuery(getUserProfileTest);
-      // const user = await qlQuery(getUserProfileQuery, {"email": "admin@gmail.com"});
-
-      this.setState({ user : data.getUserProfileTest, error: '', });
-      // console.log(this.state);
-    })();    
-
+    // const id = localStorage.getItem('user');
+    if (this.props.data && this.props.data.getUserProfile) {
+      this.setState({ user : this.props.data.getUserProfile, error: '', });
+    }
+    else {
+      this.setState({ error: 'Profile loading fail.' });
+    }
   }
 
   handleChange = (e) => {
@@ -83,7 +82,7 @@ class Profile extends Component{
   }
 
   render(){
-    if (!cookie.load('user')) {
+    if (!localStorage.getItem('user')) {
       return <Redirect to="/landing" />;
     }
     const timeZones = moment.tz.names().map((name) => {
@@ -151,4 +150,8 @@ class Profile extends Component{
 //       }
 //   } 
 //   })(Profile);
-export default Profile;
+// export default Profile;
+export default graphql(getUserProfileQuery, { 
+  name: "data",
+  options : { variables: { email: localStorage.getItem('user') }}
+  })(Profile);

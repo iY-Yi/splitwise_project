@@ -4,7 +4,7 @@ import cookie from 'react-cookies';
 
 class Landing extends Component {
   render() {
-    if (cookie.load('user')) {
+    if (localStorage.getItem('user')) {
       return <Redirect to="/dashboard" />;
     }
     return (
