@@ -7,12 +7,6 @@ query($email : String){
   }
 }`;
 
-const getUserProfileTest = `
-{
-  getUserProfileTest{
-    email name avatar phone currency timezone language
-  }
-}`;
 
-export { getUserProfileQuery, getUserProfileTest };
+export { getUserProfileQuery, };
 

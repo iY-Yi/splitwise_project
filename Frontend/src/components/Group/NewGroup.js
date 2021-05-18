@@ -2,8 +2,9 @@ import Axios from 'axios';
 import React, {Component} from 'react';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
-import { graphql, compose } from 'react-apollo';
-import { newGroupMutation } from '../../mutation/mutation';
+import { graphql} from 'react-apollo';
+import {flowRight as compose} from 'lodash';
+import { newGroupMutation, inviteUserMutation } from '../../mutation/mutation';
 
 class NewGroup extends Component{
   state = {
@@ -48,26 +49,51 @@ class NewGroup extends Component{
     this.setState({ search: e.target.value});
   }
 
-  inviteUser = (e) => {
+  inviteUser = async (e) => {
     this.setState({
-      inviteMsg : ''});    
+      inviteMsg : ''});
     const inviteData= {
       groupName: this.state.name,
       userEmail: e.target.value,
       accepted: 0,
       requestor: cookie.load('user'),
     }
-    Axios.post('/group/invite', inviteData)
-    .then((response)=>{
-      this.setState({
-        inviteMsg : 'The user is invited.'});
-    })
-    .catch((err) => {
-      console.log(err);
-      this.setState({
-        inviteMsg: 'Failed! Unauthorized',
-      })
-    });
+
+    try {
+      const mutationResponse = await this.props.inviteUserMutation({
+        variables: {
+          groupName: this.state.name,
+          userEmail: e.target.value,
+          accepted: 0,
+          requestor: localStorage.getItem('user'),
+        },
+      });
+      console.log(mutationResponse);
+      const response = mutationResponse.data.inviteUser;
+      if (response && response.status === '200') {
+        this.setState({
+          inviteMsg : 'USER_INVITED' });
+      } else {
+        this.setState({
+          inviteMsg: response.message });      
+      }
+    }
+    catch (e) {
+      console.log(e);
+      this.setState({inviteMsg : 'USER_INVITE_FAIL' });
+    }
+
+    // Axios.post('/group/invite', inviteData)
+    // .then((response)=>{
+    //   this.setState({
+    //     inviteMsg : 'The user is invited.'});
+    // })
+    // .catch((err) => {
+    //   console.log(err);
+    //   this.setState({
+    //     inviteMsg: 'Failed! Unauthorized',
+    //   })
+    // });
   }
 
   submitSave = async(e) => {
@@ -89,7 +115,7 @@ class NewGroup extends Component{
     //   // members: this.state.members,     
     // }
     try {
-      await this.props.newGroupMutation({
+      const mutationResponse = await this.props.newGroupMutation({
         variables: {
           name: this.state.name,
           image: this.state.image,
@@ -97,6 +123,17 @@ class NewGroup extends Component{
           creator: this.state.creator,
         },
       });
+      console.log(mutationResponse);
+      const response = mutationResponse.data.newGroup;
+      if (response && response.status === '200') {
+        this.setState({
+          message : 'New group is created.'});
+      } else {
+        this.setState({
+          message: response.message,
+          saveStatus: false
+        });      
+      }
       // console.log(test);
       // const response = await Axios.post("/group/new", group)
       // console.log("Group created: ", response.status);
@@ -169,4 +206,9 @@ class NewGroup extends Component{
 }
 
 // export default NewGroup;
-export default graphql(newGroupMutation, { name: "newGroupMutation" })(NewGroup);
+// export default graphql(newGroupMutation, { name: "newGroupMutation" })(NewGroup);
+
+export default compose(
+  graphql(newGroupMutation, { name: "newGroupMutation" }),
+  graphql(inviteUserMutation, { name: 'inviteUserMutation' })
+  )(NewGroup);

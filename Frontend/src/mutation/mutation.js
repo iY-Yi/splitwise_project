@@ -7,7 +7,6 @@ mutation ($email: String, $name: String, $password: String){
     }
 }
 `;
-
 const userLoginMutation = gql`
 mutation ($email: String, $password: String){
     userLogin(email: $email, password: $password){
@@ -15,7 +14,6 @@ mutation ($email: String, $password: String){
     }
 }
 `;
-
 const profileUpdateMutation = gql`
 mutation ($email: String, $name: String, $phone: String, 
     $currency: String, $language: String, $timezone: String, $avatar: String){
@@ -26,15 +24,35 @@ mutation ($email: String, $name: String, $phone: String,
     }
 }
 `;
-
 const newGroupMutation = gql`
 mutation ($name: String, $image: String, $fileSelected: String, $creator: String){
     newGroup(name: $name, image: $image, fileSelected: $fileSelected, creator: $creator){
-      name
+      status message
     }
 }
 `;
-
+const inviteUserMutation = gql`
+mutation ($groupName: String, $userEmail: String, $requestor: String){
+  inviteUser(groupName: $groupName, userEmail: $userEmail, requestor: $requestor){
+    status message
+  }
+}
+`;
+const acceptInviteMutation = gql`
+mutation ($groupName: String, $userEmail: String){
+  acceptInvite(groupName: $groupName, userEmail: $userEmail){
+    status message
+  }
+}
+`;
+const addExpenseMutation = gql`
+mutation ($group: String, $description: String, $amount: Int, $email: String){
+  addExpense(group: $group, description: $description, amount: $amount, email: $email, ){
+    status message
+  }
+}
+`;
 export {
-  userSignUpMutation, userLoginMutation, newGroupMutation, profileUpdateMutation,
+  userSignUpMutation, userLoginMutation, profileUpdateMutation, newGroupMutation,
+  inviteUserMutation, acceptInviteMutation, addExpenseMutation,
 };

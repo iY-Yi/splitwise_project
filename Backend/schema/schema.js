@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const { User, Group, GroupUser } = require('../db_models');
 const { userLogin, userSignup, userUpdate } = require('../mutations/user');
+const { newGroup, userInvite } = require('../mutations/group');
 
 const {
   GraphQLObjectType,
@@ -89,6 +90,32 @@ const Mutation = new GraphQLObjectType({
       },
       async resolve(parent, args) {
         return userUpdate(args);
+      },
+    },
+
+    newGroup: {
+      type: StatusType,
+      args: {
+        name: { type: GraphQLString },
+        image: { type: GraphQLString },
+        fileSelected: { type: GraphQLString },
+        creator: { type: GraphQLString },
+      },
+      async resolve(parent, args) {
+        return newGroup(args);
+      },
+    },
+
+    inviteUser: {
+      type: StatusType,
+      args: {
+        groupName: { type: GraphQLString },
+        userEmail: { type: GraphQLString },
+        requestor: { type: GraphQLString },
+      },
+      async resolve(parent, args) {
+        console.log(args);
+        return userInvite(args);
       },
     },
 

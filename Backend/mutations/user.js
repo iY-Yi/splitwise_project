@@ -13,7 +13,12 @@ const userLogin = async (args) => {
   // const user = users[0];
   const match = await bcrypt.compare(args.password, user.password);
   if (match) {
-    return { status: 200, message: '' };
+    const data = {
+      email: user.email,
+      currency: user.currency,
+      timezone: user.timezone,
+    };
+    return { status: 200, message: JSON.stringify(data) };
   }
   return { status: 400, message: 'WRONG_PASSWORD' };
 };

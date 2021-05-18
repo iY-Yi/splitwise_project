@@ -9,7 +9,7 @@ class Expense extends Component {
     super(props);
     this.state = {
       group: this.props.match.params.group,
-      email: cookie.load('user'),
+      email: localStorage.getItem('user'),
       expenses: [],
       balances: [],
       description: '',
@@ -23,11 +23,11 @@ class Expense extends Component {
   componentDidMount() {
     const { group } = this.state;
     // console.log(group);
-    let timezone = cookie.load('timezone')? cookie.load('timezone'):'';
+    let timezone = localStorage.getItem('timezone')? localStorage.getItem('timezone'):'';
     Axios.get(`/group/expense/${group}`, {
       params: {
         timezone: timezone,
-        user: cookie.load('user'),
+        user: localStorage.getItem('user'),
       },
     })
       .then((response) => {
@@ -76,10 +76,10 @@ class Expense extends Component {
   }
 
   render() {
-    if (!cookie.load('user')) {
+    if (!localStorage.getItem('user')) {
       return <Redirect to="/landing" />;
     }
-    const currency = cookie.load('currency');
+    const currency = localStorage.getItem('currency');
     let expenses = this.state.expenses.map((expense) => {
       return(
           <tr>
