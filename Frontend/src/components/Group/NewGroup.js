@@ -2,6 +2,8 @@ import Axios from 'axios';
 import React, {Component} from 'react';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
+import { graphql, compose } from 'react-apollo';
+import { newGroupMutation } from '../../mutation/mutation';
 
 class NewGroup extends Component{
   state = {
@@ -10,7 +12,7 @@ class NewGroup extends Component{
     saveStatus: null,
     fileSelected: '',
     users: [],
-    creator: cookie.load('user'),
+    creator: localStorage.getItem('user'),
     // members: [],
     search: '',
     message: '',
@@ -79,16 +81,25 @@ class NewGroup extends Component{
     }
 
     // create in database
-    const group = {
-      name: this.state.name,
-      image: this.state.image,
-      fileSelected: this.state.fileSelected,
-      creator: this.state.creator,
-      // members: this.state.members,     
-    }
+    // const group = {
+    //   name: this.state.name,
+    //   image: this.state.image,
+    //   fileSelected: this.state.fileSelected,
+    //   creator: this.state.creator,
+    //   // members: this.state.members,     
+    // }
     try {
-      const response = await Axios.post("/group/new", group)
-      console.log("Group created: ", response.status);
+      await this.props.newGroupMutation({
+        variables: {
+          name: this.state.name,
+          image: this.state.image,
+          fileSelected: this.state.fileSelected,
+          creator: this.state.creator,
+        },
+      });
+      // console.log(test);
+      // const response = await Axios.post("/group/new", group)
+      // console.log("Group created: ", response.status);
       this.setState({ saveStatus: true,
         message : 'New group is created.'});
       }
@@ -99,7 +110,7 @@ class NewGroup extends Component{
   }
 
   render(){
-    if (!cookie.load('user')) {
+    if (!localStorage.getItem('user')) {
       return <Redirect to="/landing" />;
     }
     let searchMembers = this.state.users.filter((data) => {
@@ -157,4 +168,5 @@ class NewGroup extends Component{
   }
 }
 
-export default NewGroup;
+// export default NewGroup;
+export default graphql(newGroupMutation, { name: "newGroupMutation" })(NewGroup);

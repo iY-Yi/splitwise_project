@@ -5,12 +5,14 @@ import { userLogin } from '../../js/actions/loginAction';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import cookie from 'react-cookies';
+import { graphql } from 'react-apollo';
+import { userLoginMutation } from '../../mutation/mutation';
 
 class Login extends Component{
 
   constructor(props) {
     super(props);
-    this.state = { submitFlag: false};
+    this.state = { submitFlag: false, message: '' };
   }
 
   handleChange = (e) => {
@@ -19,34 +21,49 @@ class Login extends Component{
     });
   }
 
-  submitLogin = (e) => {
+  submitLogin = async (e) => {
     e.preventDefault();
-    //this.setState({ submitted: true});
-    const data = {
-      email : this.state.email,
-      password : this.state.password
+    let mutationResponse = await this.props.userLoginMutation({
+      variables: {
+        email: this.state.email,
+        password: this.state.password,
+      }
+    });
+    console.log(mutationResponse);
+    const response = mutationResponse.data.userLogin;
+    if (response && response.status === '200') {
+      this.setState({
+        message: '',
+      });
+      localStorage.setItem('user', this.state.email);
+      localStorage.setItem('currency', 'USD');
+      localStorage.setItem('timezone', 'US/Pacific');
+
+    } else {
+      this.setState({
+        message: response.message,
+      });      
     }
-    this.props.userLogin(data);
     this.setState({
       submitFlag: true,
     });
   }
 
   render(){
-    if (cookie.load('user')) {
+    if (localStorage.getItem('user')) {
       return <Redirect to="/dashboard" />;
     }
     // console.log('props:', this.props);
-    let message = '';
-    if (this.props.user && this.props.user.email) {
-      return <Redirect to= "/dashboard" />;
-    }
-    else if (this.props.user === 'NO_USER') {
-      message = 'NO_USER';
-    }
-    else if (this.props.user === 'WRONG_PASSWORD') {
-      message = 'WRONG_PASSWORD';
-    }
+    // let message = '';
+    // if (this.props.user && this.props.user.email) {
+    //   return <Redirect to= "/dashboard" />;
+    // }
+    // else if (this.props.user === 'NO_USER') {
+    //   message = 'NO_USER';
+    // }
+    // else if (this.props.user === 'WRONG_PASSWORD') {
+    //   message = 'WRONG_PASSWORD';
+    // }
 
     return(
       <div>
@@ -54,7 +71,7 @@ class Login extends Component{
         <div className="container">
             <h3>Log In</h3>
               <form id="userLogin" onSubmit={this.submitLogin}>
-              { this.state.submitFlag === true && message!=='' && <div class="alert alert-danger">{message}</div>}
+              { this.state.submitFlag === true && this.state.message!=='' && <div class="alert alert-danger">{this.state.message}</div>}
                 <label>Email:</label><br/>
                 <input className="form-control" type="email" id="email" name="email" placeholder="name@example.com" onChange={this.handleChange}/><br/>
                 <label>Password:</label><br/>
@@ -69,16 +86,17 @@ class Login extends Component{
 
 // login component includes user object and userLogin action/function.
 // define available prop types accessable in login component 
-Login.propTypes = {
-  userLogin: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired
-}
+// Login.propTypes = {
+//   userLogin: PropTypes.func.isRequired,
+//   user: PropTypes.object.isRequired
+// }
 
-const mapStateToProps = (state) => {
-  return ({
-    user: state.login.user // user in login reducer
-  });
-};
+// const mapStateToProps = (state) => {
+//   return ({
+//     user: state.login.user // user in login reducer
+//   });
+// };
 
-// export default Login;
-export default connect(mapStateToProps, { userLogin})(Login);
+// // export default Login;
+// export default connect(mapStateToProps, { userLogin})(Login);
+export default graphql(userLoginMutation, { name: "userLoginMutation" })(Login);

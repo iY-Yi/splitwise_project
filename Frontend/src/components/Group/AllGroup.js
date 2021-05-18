@@ -8,7 +8,7 @@ class AllGroup extends Component{
     invites: [],
     groups: [],
     search: '',
-    user: cookie.load('user'),
+    user: localStorage.getItem('user'),
     message: '',
   };
 
@@ -16,7 +16,7 @@ class AllGroup extends Component{
   componentDidMount(){
     Axios.get('/group/all', {
       params: {
-        user: cookie.load('user'),
+        user: localStorage.getItem('user'),
       }
     })
     .then((response) => {
@@ -68,7 +68,7 @@ class AllGroup extends Component{
   }
 
   render(){
-    if (!cookie.load('user')) {
+    if (!localStorage.getItem('user')) {
       return <Redirect to="/landing" />;
     }
     let allGroup = this.state.groups.filter((group)=> {

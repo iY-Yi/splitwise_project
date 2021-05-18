@@ -1,12 +1,12 @@
-import Axios from 'axios';
+// import Axios from 'axios';
 import React, {Component} from 'react';
 import { graphql, compose } from 'react-apollo';
 import {Redirect} from 'react-router';
-import { userSignup } from '../../js/actions/signupAction';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import cookie from 'react-cookies';
-import qlQuery from '../../util';
+// import { userSignup } from '../../js/actions/signupAction';
+// import PropTypes from 'prop-types';
+// import { connect } from 'react-redux';
+// import cookie from 'react-cookies';
+// import qlQuery from '../../util';
 import { userSignUpMutation } from '../../mutation/mutation';
 
 class Signup extends Component{
@@ -26,7 +26,7 @@ class Signup extends Component{
     this.setState({user});
   }
 
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
       e.preventDefault();
       //this.setState({ submitted: true});
       const {user} = this.state;
@@ -39,20 +39,47 @@ class Signup extends Component{
       //       userSignUpMutation,
       //       {"userInput": user} //variables need to passed as the second argument
       //   ));
-      this.props.userSignUpMutation({
+      let mutationResponse = await this.props.userSignUpMutation({
         variables: {
-            email: user.email,
-            name: user.name,
-            password: user.password,
-        },
-        // refetchQueries: [{ query: getBooksQuery }]
+          email: user.email,
+          name: user.name,
+          password: user.password,
+        }
       });
-
-        this.setState({ submitted: true});
+      console.log(mutationResponse);
+      const response = mutationResponse.data.userSignup;
+      // console.log(response);
+      if (response && response.status === '200') {
+        this.setState({
+          message: '',
+        });
         localStorage.setItem('user', this.state.user.email);
         localStorage.setItem('currency', 'USD');
         localStorage.setItem('timezone', 'US/Pacific');
-      // })();      
+  
+      } else {
+        this.setState({
+          message: response.message,
+        });      
+      }
+      this.setState({
+        submitted: true,
+      });
+
+      // this.props.userSignUpMutation({
+      //   variables: {
+      //       email: user.email,
+      //       name: user.name,
+      //       password: user.password,
+      //   },
+      //   // refetchQueries: [{ query: getBooksQuery }]
+      // });
+
+      //   this.setState({ submitted: true});
+      //   localStorage.setItem('user', this.state.user.email);
+      //   localStorage.setItem('currency', 'USD');
+      //   localStorage.setItem('timezone', 'US/Pacific');
+      // // })();      
 
       // this.props.userSignup(user);
       // this.setState({
@@ -76,22 +103,22 @@ class Signup extends Component{
       return <Redirect to="/dashboard" />;
     }
     // console.log('In signup', this.props);
-    let message = '';
+    // let message = '';
     // if (this.state.submitted === true && this.props.user && this.props.user.email) {
     if (this.state.submitted === true) {
       // console.log('redirect to dashboard');
       return <Redirect to= "/dashboard" />;
     }
-    else if (this.props.user && this.props.user.errors) {
-      message = 'User sign up failed!';
-    }
+    // else if (this.props.user && this.props.user.errors) {
+    //   message = 'User sign up failed!';
+    // }
       return(
           <div>
               <br/>
               <div className="container">
                   <h2>New User</h2>
                       <form id="userSignUp" onSubmit={this.handleSubmit}>
-                      { this.state.submitted === true && message!=='' && <div className="alert alert-danger">{message}</div>}
+                      { this.state.submitted === true && this.state.message!=='' && <div className="alert alert-danger">{this.state.message}</div>}
                           <label>Name:</label><br/>
                           <input className="form-control" type="text" id="name" name="name" onChange={this.handleChange}/><br/>
                           <label>Email:</label><br/>

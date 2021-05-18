@@ -3,10 +3,12 @@ import React, {Component} from 'react';
 import cookie from 'react-cookies';
 import moment from 'moment-timezone'; 
 import {Redirect} from 'react-router';
-import { graphql, compose, useQuery } from 'react-apollo';
+import { graphql } from 'react-apollo';
+import {flowRight as compose} from 'lodash';
 // import { useQuery } from '@apollo/client';
-import { getUserProfileQuery, getUserProfileTest } from '../../queries/queries';
-import qlQuery from '../../util';
+import { getUserProfileQuery } from '../../queries/queries';
+import { profileUpdateMutation } from '../../mutation/mutation';
+// import qlQuery from '../../util';
 
 class Profile extends Component{
   state = {
@@ -26,12 +28,17 @@ class Profile extends Component{
   };
 
   componentDidMount(){
-    // const id = localStorage.getItem('user');
+    this.getProfile();
+  }
+
+  getProfile = async() => {
+    console.log('Profile called');
+    
+    console.log(await this.props.data);
     if (this.props.data && this.props.data.getUserProfile) {
+      const userProfile = await this.props.data.getUserProfile;
+      console.log(userProfile);
       this.setState({ user : this.props.data.getUserProfile, error: '', });
-    }
-    else {
-      this.setState({ error: 'Profile loading fail.' });
     }
   }
 
@@ -63,12 +70,38 @@ class Profile extends Component{
       }
   
       // update in database
-      const {user} = this.state;
+      let mutationResponse = await this.props.profileUpdateMutation({
+        variables: {
+          email: this.state.user.email,
+          name: this.state.user.name,
+          phone: this.state.user.phone,
+          avatar: this.state.user.avatar,
+          currency: this.state.user.currency,
+          language: this.state.user.language,
+          timezone: this.state.user.timezone,
+        }
+      });
+      console.log(mutationResponse);
+      const response = mutationResponse.data.profileUpdate;
+      if (response && response.status === '200') {
+        this.setState({
+          saveStatus: true, disabled: true, error: '',
+        });
+        localStorage.setItem('currency', this.state.user.currency);
+        localStorage.setItem('timezone', this.state.user.timezone);
+  
+      } else {
+        this.setState({saveStatus: false,
+          error: 'Profile save failed.',});
+      }    
+      }      
 
-      const response = await Axios.post("/user/update", user)
-      // console.log("Profile saved: ", response.status);
-      this.setState({ saveStatus: true, disabled: true, error: '', });
-      }
+      // const {user} = this.state;
+
+      // const response = await Axios.post("/user/update", user)
+      // // console.log("Profile saved: ", response.status);
+      // this.setState({ saveStatus: true, disabled: true, error: '', });
+      // }
     catch (e) {
       // console.log(e);
       this.setState({saveStatus: false,
@@ -85,6 +118,7 @@ class Profile extends Component{
     if (!localStorage.getItem('user')) {
       return <Redirect to="/landing" />;
     }
+
     const timeZones = moment.tz.names().map((name) => {
       return(
       <option value={name} key={name}>{name}</option>
@@ -141,17 +175,13 @@ class Profile extends Component{
   }
 }
 
-// export default graphql(getUserProfileQuery, { name: "getUserProfileQuery" }, {
-//   options : (props) => {
-//       return {
-//           variables : {
-//               email : cookie.load('user')
-//           }
-//       }
-//   } 
-//   })(Profile);
 // export default Profile;
-export default graphql(getUserProfileQuery, { 
-  name: "data",
-  options : { variables: { email: localStorage.getItem('user') }}
-  })(Profile);
+export default compose(
+  graphql(getUserProfileQuery, { 
+    name: "data",
+    options : { variables: { email: localStorage.getItem('user') }},
+  }),
+  graphql(profileUpdateMutation, { name: 'profileUpdateMutation' })
+  )(Profile);
+
+// export default graphql(getUserProfileQuery, { name: "getUserProfile" })(Profile);
