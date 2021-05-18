@@ -3,6 +3,9 @@ import React, {Component} from 'react';
 import cookie from 'react-cookies';
 import moment from 'moment-timezone'; 
 import {Redirect} from 'react-router';
+import { graphql } from 'react-apollo';
+import { getUserProfileQuery, getUserProfileTest } from '../../queries/queries';
+import qlQuery from '../../util';
 
 class Profile extends Component{
   state = {
@@ -23,15 +26,14 @@ class Profile extends Component{
 
   componentDidMount(){
     const id = cookie.load('user');
-    // console.log(id);
-    Axios.get(`/user/profile/${id}`)
-    .then((response) => {
-      this.setState({ user : response.data, error: '', });
+      (async () => {
+      const data = await qlQuery(getUserProfileTest);
+      // const user = await qlQuery(getUserProfileQuery, {"email": "admin@gmail.com"});
+
+      this.setState({ user : data.getUserProfileTest, error: '', });
       // console.log(this.state);
-    })
-    .catch((err) => {
-      this.setState({error: 'Profile loading failed.'});
-    });
+    })();    
+
   }
 
   handleChange = (e) => {
@@ -140,4 +142,13 @@ class Profile extends Component{
   }
 }
 
+// export default graphql(getUserProfileQuery, { name: "getUserProfileQuery" }, {
+//   options : (props) => {
+//       return {
+//           variables : {
+//               email : cookie.load('user')
+//           }
+//       }
+//   } 
+//   })(Profile);
 export default Profile;

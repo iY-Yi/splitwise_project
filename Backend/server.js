@@ -1,4 +1,6 @@
 const express = require('express');
+const { graphqlHTTP } = require('express-graphql');
+const { ApolloServer, gql } = require('apollo-server-express');
 
 const app = express();
 const port = 3001;
@@ -15,6 +17,8 @@ app.set('view engine', 'ejs');
 app.use(cors());
 
 const { Sequelize, Op } = require('sequelize');
+const schema = require('./schema/schema');
+
 const {
   Expense, User, GroupUser, Balance,
 } = require('./db_models');
@@ -176,6 +180,18 @@ app.get('/error', (req, res, next) => {
     });
   }
 });
+
+// const server = new ApolloServer({
+//   typeDefs,
+//   resolvers,
+//   context: ({ req }) => ({ session: { id: 1 } }),
+// });
+// server.applyMiddleware({ app });
+
+app.use('/graphql', graphqlHTTP({
+  schema,
+  graphiql: true,
+}));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

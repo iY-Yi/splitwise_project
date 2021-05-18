@@ -29,20 +29,20 @@ class Signup extends Component{
       const {user} = this.state;
       // console.log(user);
 
-      this.props.userSignup(user);
-      this.setState({
-        submitted: true,
-      });
-
-      // Axios.post("/user/signup", user)
-      // .then((response)=> {
-      //     console.log("Successful: ", response.status);
-      //     this.setState({ submitted: true});
-      // })
-      // .catch((err) => {
-      //     console.log("Error", err);
-      //     this.setState({ submitted : false});
+      // this.props.userSignup(user);
+      // this.setState({
+      //   submitted: true,
       // });
+
+      Axios.post("/user/signup", user)
+      .then((response)=> {
+          console.log("Successful: ", response.status);
+          this.setState({ submitted: true});
+      })
+      .catch((err) => {
+          console.log("Error", err);
+          this.setState({ submitted : false});
+      });
     
   }
 
@@ -79,17 +79,18 @@ class Signup extends Component{
       );
   }
 }
+export default Signup;
 
-Signup.propTypes = {
-  userSignup: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired
-}
+// Signup.propTypes = {
+//   userSignup: PropTypes.func.isRequired,
+//   user: PropTypes.object.isRequired
+// }
 
-const mapStateToProps = (state) => {
-  return ({
-    user: state.login.user // state.user in login reducer
-  });
-};
+// const mapStateToProps = (state) => {
+//   return ({
+//     user: state.login.user // state.user in login reducer
+//   });
+// };
 
-// export default Signup;
-export default connect(mapStateToProps, { userSignup})(Signup);
+// // export default Signup;
+// export default connect(mapStateToProps, { userSignup})(Signup);
